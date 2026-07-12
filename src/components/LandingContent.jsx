@@ -17,7 +17,7 @@ function LandingContent() {
       <div className="mt-8 flex gap-4">
         <button
           type="button"
-          onClick={() => navigate('/create-room')}
+          onClick={() => navigate('/rooms/create')}
           className="h-11 w-28 rounded-xl bg-[#8B00FF] font-semibold text-white shadow-md transition hover:bg-[#7700D4]"
         >
           방 만들기

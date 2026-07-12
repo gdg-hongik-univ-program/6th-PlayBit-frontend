@@ -1,67 +1,84 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import RoomCodeCard from '../components/RoomCodeCard'
 import CategoryOption from '../components/CategoryOption'
+import useGameStore from '../stores/gameStore'
 
 const categories = [
   {
     id: 1,
+    apiValue: 'STUDY',
     icon: '📚',
     title: '공부',
     description: '교재 1챕터 읽기 · 플래시카드 외우기 · 노트 정리하기',
   },
   {
     id: 2,
+    apiValue: 'EXERCISE',
     icon: '💪',
     title: '운동',
     description: '팔굽혀펴기 20개 · 30분 달리기 · 10분 스트레칭',
   },
   {
     id: 3,
+    apiValue: 'HEALTH',
     icon: '🌿',
     title: '건강',
     description: '명상 10분 · 균형 잡힌 식사 · 일찍 잠들기',
   },
   {
     id: 4,
+    apiValue: 'HOBBY',
     icon: '🎨',
     title: '취미',
     description: '새 곡 연습하기 · 책 읽기 · 요리하기',
   },
   {
     id: 5,
+    apiValue: 'LIFE',
     icon: '🏠',
     title: '일상생활',
     description: '방 정리하기 · 이메일 정리 · 하루 계획 세우기',
   },
 ]
 
-const createRoomCode = () => {
-  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = ''
-
-  for (let i = 0; i < 6; i += 1) {
-    const randomIndex = Math.floor(Math.random() * characters.length)
-    code += characters[randomIndex]
-  }
-
-  return code
-}
-
 function CreateRoomPage() {
   const navigate = useNavigate()
+  const hasCreatedRoom = useRef(false)
+
   const [selectedCategory, setSelectedCategory] = useState(null)
-  const [roomCode] = useState(() => createRoomCode())
+
+  const room = useGameStore((state) => state.room)
+  const createNewRoom = useGameStore((state) => state.createNewRoom)
+  const selectCategory = useGameStore((state) => state.selectCategory)
+  const isLoading = useGameStore((state) => state.isLoading)
+  const error = useGameStore((state) => state.error)
+
+  useEffect(() => {
+    const createRoomOnPageEnter = async () => {
+      if (hasCreatedRoom.current) return
+
+      hasCreatedRoom.current = true
+      await createNewRoom()
+    }
+
+    createRoomOnPageEnter()
+  }, [createNewRoom])
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category)
     console.log(`${category.title} 카테고리가 선택되었습니다.`)
   }
 
-  const handleStartGame = () => {
-    if (!selectedCategory) return
+  const handleStartGame = async () => {
+    if (!selectedCategory || !room?.entryCode) return
 
-    navigate('/game')
+    const createdRoom = await selectCategory(
+      room.entryCode,
+      selectedCategory.apiValue,
+    )
+
+    navigate(`/rooms/${createdRoom.entryCode}/game`)
   }
 
   return (
@@ -83,7 +100,7 @@ function CreateRoomPage() {
 
       <main className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-10 px-6 py-14 md:grid-cols-[320px_1fr]">
         <div className="flex flex-col gap-4">
-          <RoomCodeCard roomCode={roomCode} />
+          <RoomCodeCard roomCode={room?.entryCode ?? '------'} />
 
           <section className="rounded-xl border border-[#FFD98A] bg-[#FFF9E8] px-5 py-4">
             <p className="text-xs leading-5 text-[#E18424]">
@@ -94,18 +111,22 @@ function CreateRoomPage() {
 
           <button
             type="button"
-            disabled={!selectedCategory}
+            disabled={!selectedCategory || isLoading || !room?.entryCode}
             onClick={handleStartGame}
             className={`h-12 rounded-xl text-sm font-semibold ${
-              selectedCategory
+              selectedCategory && room?.entryCode
                 ? 'bg-[#8B00F5] text-white'
                 : 'cursor-not-allowed bg-[#EEE8FF] text-[#9A8EBB]'
             }`}
           >
-            {selectedCategory
-              ? `${selectedCategory.title} 카테고리로 시작하기`
-              : '카테고리를 선택해주세요'}
+            {isLoading
+              ? '처리 중...'
+              : selectedCategory
+                ? `${selectedCategory.title} 카테고리로 시작하기`
+                : '카테고리를 선택해주세요'}
           </button>
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
 
         <section>
