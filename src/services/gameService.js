@@ -1,5 +1,4 @@
 import { mockRoom } from '../data/mockRoom'
-import { registerPlayerApi } from '../api/playerApi'
 
 let roomState = structuredClone(mockRoom)
 

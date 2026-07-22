@@ -6,22 +6,7 @@ import {
   getRoom,
 } from '../api/roomApi'
 
-import { registerPlayerApi } from '../services/playerService'
-
-const applyRoomData = (data) => ({
-  room: {
-    roomId: data.roomId,
-    entryCode: data.entryCode,
-    status: data.status,
-    category: data.category ?? null,
-  },
-  missions: data.missions ?? [],
-  players: data.players ?? [],
-  turn: data.turn ?? null,
-  myRole: data.myRole ?? null,
-  winnerMemberId: data.winnerMemberId ?? null,
-  status: data.status ?? 'IDLE',
-})
+import { registerPlayer } from '../services/playerService'
 
 const initialState = {
   room: null,
@@ -338,7 +323,7 @@ const useGameStore = create((set, get) => ({
       })
 
       const playerData =
-        await registerPlayerApi(entryCode)
+        await registerPlayer(entryCode)
 
       set((state) => ({
         room: {
