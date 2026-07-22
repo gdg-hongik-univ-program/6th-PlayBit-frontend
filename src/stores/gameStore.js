@@ -6,6 +6,8 @@ import {
   getRoom,
 } from '../api/roomApi'
 
+import { registerPlayerApi } from '../api/playerApi'
+
 const initialState = {
   room: null,
   categories: [],
@@ -17,7 +19,9 @@ const initialState = {
   turnDeadline: null,
   currentTurnSabotaged: false,
 
+  // 기존 컴포넌트에서 O 또는 X로 사용
   turn: null,
+
   myMemberId: null,
   myRole: null,
 
@@ -46,9 +50,6 @@ const getErrorMessage = (error, defaultMessage) => {
 /**
  * GET /api/rooms/{entryCode} 응답을
  * Zustand 상태 구조로 변환합니다.
- *
- * FINISHED 응답에는 entryCode, category, myMemberId가 없을 수 있으므로
- * 기존 상태를 유지하도록 처리합니다.
  */
 const applyRoomData = (
   data,
@@ -67,30 +68,49 @@ const applyRoomData = (
     previousState.missions ??
     []
 
-  const myMemberId =
-    data.myMemberId ??
-    previousState.myMemberId ??
-    null
+  /*
+   * FINISHED 응답에는 myMemberId가 없을 수 있으므로
+   * 필드 자체가 없으면 이전 상태를 유지합니다.
+   *
+   * 서버가 myMemberId: null을 명시적으로 반환한 경우에는
+   * 관전자로 판단하고 null을 저장합니다.
+   */
+  const hasMyMemberId =
+    Object.hasOwn(data, 'myMemberId')
 
-  const myPlayer = players.find(
-    (player) =>
-      String(player.memberId) ===
-      String(myMemberId),
-  )
+  const myMemberId = hasMyMemberId
+    ? data.myMemberId
+    : previousState.myMemberId ?? null
+
+  const myPlayer =
+    myMemberId !== null &&
+    myMemberId !== undefined
+      ? players.find(
+          (player) =>
+            String(player.memberId) ===
+            String(myMemberId),
+        )
+      : null
 
   const myRole =
-    myPlayer?.role ??
-    previousState.myRole ??
-    null
+    hasMyMemberId && myMemberId === null
+      ? null
+      : myPlayer?.role ??
+        previousState.myRole ??
+        null
 
   const currentTurnMemberId =
     data.currentTurnMemberId ?? null
 
-  const currentTurnPlayer = players.find(
-    (player) =>
-      String(player.memberId) ===
-      String(currentTurnMemberId),
-  )
+  const currentTurnPlayer =
+    currentTurnMemberId !== null &&
+    currentTurnMemberId !== undefined
+      ? players.find(
+          (player) =>
+            String(player.memberId) ===
+            String(currentTurnMemberId),
+        )
+      : null
 
   return {
     room: {
@@ -127,10 +147,9 @@ const applyRoomData = (
     currentTurnSabotaged:
       data.currentTurnSabotaged ?? false,
 
-    // 기존 컴포넌트에서 turn을 O 또는 X로 사용하기 위한 값
+    // 현재 턴 memberId를 O 또는 X로 변환
     turn:
-      currentTurnPlayer?.role ??
-      null,
+      currentTurnPlayer?.role ?? null,
 
     myMemberId,
     myRole,
@@ -153,10 +172,13 @@ const useGameStore = create((set, get) => ({
   },
 
   resetRoomState: () => {
-    set(initialState)
+    set({ ...initialState })
   },
 
-  setRoomState: (data, fallbackEntryCode = null) => {
+  setRoomState: (
+    data,
+    fallbackEntryCode = null,
+  ) => {
     const previousState = get()
 
     set(
@@ -169,13 +191,9 @@ const useGameStore = create((set, get) => ({
   },
 
   /**
-   * POST /api/rooms
+   * 방 생성
    *
-   * 반환:
-   * {
-   *   entryCode,
-   *   categories
-   * }
+   * POST /api/rooms
    */
   createNewRoom: async () => {
     try {
@@ -236,9 +254,11 @@ const useGameStore = create((set, get) => ({
   },
 
   /**
+   * 카테고리 설정
+   *
    * PATCH /api/rooms/{entryCode}/category
    *
-   * PATCH 응답의 data가 빈 객체이므로
+   * 응답 data가 빈 객체이므로
    * applyRoomData를 호출하지 않습니다.
    */
   selectCategory: async (
@@ -293,6 +313,62 @@ const useGameStore = create((set, get) => ({
   },
 
   /**
+   * 방 참여
+   */
+  enterRoom: async (entryCode) => {
+    try {
+      set({
+        isLoading: true,
+        error: null,
+      })
+
+      const playerData =
+        await registerPlayerApi(entryCode)
+
+      set((state) => ({
+        room: {
+          ...state.room,
+          entryCode,
+        },
+
+        myMemberId:
+          playerData.myMemberId ??
+          playerData.memberId ??
+          state.myMemberId,
+
+        myRole:
+          playerData.role ??
+          playerData.myRole ??
+          state.myRole,
+      }))
+
+      return playerData
+    } catch (error) {
+      console.error(
+        '방 입장 오류:',
+        error.response?.status,
+        error.response?.data,
+        error,
+      )
+
+      set({
+        error: getErrorMessage(
+          error,
+          '방 입장에 실패했습니다.',
+        ),
+      })
+
+      throw error
+    } finally {
+      set({
+        isLoading: false,
+      })
+    }
+  },
+
+  /**
+   * 방 정보 조회
+   *
    * GET /api/rooms/{entryCode}
    */
   fetchRoom: async (entryCode) => {
