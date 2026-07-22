@@ -35,11 +35,16 @@ function JoinRoomPage() {
     }
 
     try {
-      const joinedRoom = await enterRoom(entryCode)
+      const playerData = await enterRoom(entryCode)
 
-      navigate(`/rooms/${joinedRoom.entryCode}/game`)
+      console.log('플레이어 등록 성공:', playerData)
+
+      navigate(`/rooms/${entryCode}/game`)
     } catch (error) {
-      console.error('방 입장 실패:', error)
+      console.error(
+        '플레이어 등록 실패:',
+        error.response?.data || error,
+      )
     }
   }
 

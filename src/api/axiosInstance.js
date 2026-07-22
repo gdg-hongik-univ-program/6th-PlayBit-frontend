@@ -11,7 +11,7 @@ axiosInstance.interceptors.request.use((config) => {
   const uuid = localStorage.getItem("uuid");
 
   if (uuid) {
-    config.headers["X-User-Id"] = uuid;
+    config.headers["X-Member-Id"] = uuid;
   }
 
   return config;

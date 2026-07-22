@@ -2,11 +2,12 @@ import { create } from 'zustand'
 import {
   createRoom,
   updateRoomCategory,
-  joinRoom,
   getRoom,
   completeMission,
   sabotageMission,
 } from '../services/gameService'
+
+import { registerPlayer } from '../services/playerService'
 
 const applyRoomData = (data) => ({
   room: {
@@ -103,22 +104,37 @@ const useGameStore = create((set) => ({
     }
   },
 
-  enterRoom: async (entryCode) => {
-    try {
-      set({ isLoading: true, error: null })
+ enterRoom: async (entryCode) => {
+  try {
+    set({
+      isLoading: true,
+      error: null,
+    })
 
-      const data = await joinRoom(entryCode)
+    const playerData = await registerPlayer(entryCode)
 
-      set(applyRoomData(data))
+    set({
+      myRole: playerData.role,
+    })
 
-      return data
-    } catch (error) {
-      set({ error: '방 입장에 실패했습니다.' })
-      throw error
-    } finally {
-      set({ isLoading: false })
-    }
-  },
+    return playerData
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.error?.message ||
+      error.message ||
+      '방 입장에 실패했습니다.'
+
+    set({
+      error: errorMessage,
+    })
+
+    throw error
+  } finally {
+    set({
+      isLoading: false,
+    })
+  }
+},
 
   fetchRoom: async (entryCode) => {
     try {
