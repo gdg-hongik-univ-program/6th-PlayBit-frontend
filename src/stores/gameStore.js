@@ -6,6 +6,11 @@ import {
   getRoom,
 } from '../api/roomApi'
 
+import {
+  completeMission as completeMissionApi,
+  sabotageMission as sabotageMissionApi,
+} from '../api/missionApi'
+
 import { registerPlayer } from '../services/playerService'
 
 const initialState = {
@@ -15,6 +20,7 @@ const initialState = {
   players: [],
 
   currentTurnMemberId: null,
+  currentTurnNumber: null,
   turnStartedAt: null,
   turnDeadline: null,
   currentTurnSabotaged: false,
@@ -32,8 +38,12 @@ const initialState = {
   error: null,
 }
 
-const getErrorMessage = (error, defaultMessage) => {
-  const responseError = error.response?.data?.error
+const getErrorMessage = (
+  error,
+  defaultMessage,
+) => {
+  const responseError =
+    error.response?.data?.error
 
   if (typeof responseError === 'string') {
     return responseError
@@ -48,8 +58,26 @@ const getErrorMessage = (error, defaultMessage) => {
 }
 
 /**
+ * 객체에 특정 필드가 존재하는지 확인합니다.
+ *
+ * 값이 null인 경우와
+ * 필드 자체가 없는 경우를 구분하기 위해 사용합니다.
+ */
+const hasOwn = (object, key) => {
+  return Object.prototype.hasOwnProperty.call(
+    object,
+    key,
+  )
+}
+
+/**
  * GET /api/rooms/{entryCode} 응답을
  * Zustand 상태 구조로 변환합니다.
+ *
+ * 다음 두 응답 구조를 모두 처리합니다.
+ *
+ * 1. 방 정보가 최상위에 있는 경우
+ * 2. 방 정보가 data.room 내부에 있는 경우
  */
 const applyRoomData = (
   data,
@@ -58,28 +86,52 @@ const applyRoomData = (
 ) => {
   const previousRoom = previousState.room
 
+  const roomData = data.room ?? data
+
   const players =
     data.players ??
+    roomData.players ??
     previousState.players ??
     []
 
   const missions =
     data.missions ??
+    roomData.missions ??
     previousState.missions ??
     []
 
   /*
-   * FINISHED 응답에는 myMemberId가 없을 수 있으므로
-   * 필드 자체가 없으면 이전 상태를 유지합니다.
-   *
-   * 서버가 myMemberId: null을 명시적으로 반환한 경우에는
-   * 관전자로 판단하고 null을 저장합니다.
+   * myMemberId가 응답 최상위 또는 room 내부에
+   * 존재하는지 확인합니다.
    */
-  const hasMyMemberId =
-    Object.hasOwn(data, 'myMemberId')
+  const hasTopLevelMyMemberId = hasOwn(
+    data,
+    'myMemberId',
+  )
 
+  const hasRoomMyMemberId = hasOwn(
+    roomData,
+    'myMemberId',
+  )
+
+  const hasMyMemberId =
+    hasTopLevelMyMemberId ||
+    hasRoomMyMemberId
+
+  const responseMyMemberId =
+    hasTopLevelMyMemberId
+      ? data.myMemberId
+      : roomData.myMemberId
+
+  /*
+   * FINISHED 응답 등에 myMemberId가 없다면
+   * 이전 상태를 유지합니다.
+   *
+   * 서버가 myMemberId: null을 반환하면
+   * 관전자이므로 null로 저장합니다.
+   */
   const myMemberId = hasMyMemberId
-    ? data.myMemberId
+    ? responseMyMemberId
     : previousState.myMemberId ?? null
 
   const myPlayer =
@@ -99,8 +151,23 @@ const applyRoomData = (
         previousState.myRole ??
         null
 
+  /*
+   * currentTurnMemberId가 응답에 없으면
+   * 이전 상태를 유지합니다.
+   *
+   * 서버가 명시적으로 null을 반환한 경우에는
+   * null을 저장합니다.
+   */
+  const hasCurrentTurnMemberId = hasOwn(
+    roomData,
+    'currentTurnMemberId',
+  )
+
   const currentTurnMemberId =
-    data.currentTurnMemberId ?? null
+    hasCurrentTurnMemberId
+      ? roomData.currentTurnMemberId
+      : previousState.currentTurnMemberId ??
+        null
 
   const currentTurnPlayer =
     currentTurnMemberId !== null &&
@@ -112,26 +179,39 @@ const applyRoomData = (
         )
       : null
 
+  const responseStatus =
+    roomData.status ??
+    previousState.status ??
+    'IDLE'
+
+  const winnerMemberId =
+    responseStatus === 'PLAYING'
+      ? null
+      : hasOwn(roomData, 'winnerMemberId')
+        ? roomData.winnerMemberId
+        : previousState.winnerMemberId ??
+          null
+
   return {
     room: {
       roomId:
-        data.roomId ??
+        roomData.roomId ??
         previousRoom?.roomId ??
         null,
 
       entryCode:
-        data.entryCode ??
+        roomData.entryCode ??
         fallbackEntryCode ??
         previousRoom?.entryCode ??
         null,
 
       status:
-        data.status ??
+        roomData.status ??
         previousRoom?.status ??
         'IDLE',
 
       category:
-        data.category ??
+        roomData.category ??
         previousRoom?.category ??
         null,
     },
@@ -140,12 +220,36 @@ const applyRoomData = (
     players,
 
     currentTurnMemberId,
-    turnStartedAt:
-      data.turnStartedAt ?? null,
-    turnDeadline:
-      data.turnDeadline ?? null,
-    currentTurnSabotaged:
-      data.currentTurnSabotaged ?? false,
+
+    currentTurnNumber: hasOwn(
+      roomData,
+      'currentTurnNumber',
+    )
+      ? roomData.currentTurnNumber
+      : previousState.currentTurnNumber ??
+        null,
+
+    turnStartedAt: hasOwn(
+      roomData,
+      'turnStartedAt',
+    )
+      ? roomData.turnStartedAt
+      : previousState.turnStartedAt ?? null,
+
+    turnDeadline: hasOwn(
+      roomData,
+      'turnDeadline',
+    )
+      ? roomData.turnDeadline
+      : previousState.turnDeadline ?? null,
+
+    currentTurnSabotaged: hasOwn(
+      roomData,
+      'currentTurnSabotaged',
+    )
+      ? roomData.currentTurnSabotaged
+      : previousState.currentTurnSabotaged ??
+        false,
 
     // 현재 턴 memberId를 O 또는 X로 변환
     turn:
@@ -154,13 +258,9 @@ const applyRoomData = (
     myMemberId,
     myRole,
 
-    winnerMemberId:
-      data.winnerMemberId ?? null,
+    winnerMemberId,
 
-    status:
-      data.status ??
-      previousState.status ??
-      'IDLE',
+    status: responseStatus,
   }
 }
 
@@ -168,11 +268,15 @@ const useGameStore = create((set, get) => ({
   ...initialState,
 
   clearError: () => {
-    set({ error: null })
+    set({
+      error: null,
+    })
   },
 
   resetRoomState: () => {
-    set({ ...initialState })
+    set({
+      ...initialState,
+    })
   },
 
   setRoomState: (
@@ -219,6 +323,7 @@ const useGameStore = create((set, get) => ({
         players: [],
 
         currentTurnMemberId: null,
+        currentTurnNumber: null,
         turnStartedAt: null,
         turnDeadline: null,
         currentTurnSabotaged: false,
@@ -249,7 +354,9 @@ const useGameStore = create((set, get) => ({
 
       throw error
     } finally {
-      set({ isLoading: false })
+      set({
+        isLoading: false,
+      })
     }
   },
 
@@ -308,7 +415,9 @@ const useGameStore = create((set, get) => ({
 
       throw error
     } finally {
-      set({ isLoading: false })
+      set({
+        isLoading: false,
+      })
     }
   },
 
@@ -407,7 +516,132 @@ const useGameStore = create((set, get) => ({
 
       throw error
     } finally {
-      set({ isLoading: false })
+      set({
+        isLoading: false,
+      })
+    }
+  },
+
+  /**
+   * 미션 완료
+   *
+   * PATCH /api/rooms/{entryCode}/missions/{position}
+   */
+  completeMission: async (
+    entryCode,
+    position,
+  ) => {
+    try {
+      set({
+        isLoading: true,
+        error: null,
+      })
+
+      await completeMissionApi(
+        entryCode,
+        position,
+      )
+
+      /*
+       * PATCH 응답에는 전체 missions와 players가
+       * 포함되지 않으므로 방 정보를 다시 조회합니다.
+       */
+      const roomData =
+        await getRoom(entryCode)
+
+      const previousState = get()
+
+      set(
+        applyRoomData(
+          roomData,
+          previousState,
+          entryCode,
+        ),
+      )
+
+      return roomData
+    } catch (error) {
+      console.error(
+        '미션 완료 오류:',
+        error.response?.status,
+        error.response?.data,
+        error,
+      )
+
+      set({
+        error: getErrorMessage(
+          error,
+          '미션 완료 처리에 실패했습니다.',
+        ),
+      })
+
+      throw error
+    } finally {
+      set({
+        isLoading: false,
+      })
+    }
+  },
+
+  /**
+   * 미션 사보타주
+   *
+   * PATCH
+   * /api/rooms/{entryCode}/missions/{position}/sabotage
+   */
+  sabotageMission: async (
+    entryCode,
+    position,
+  ) => {
+    try {
+      set({
+        isLoading: true,
+        error: null,
+      })
+
+      await sabotageMissionApi(
+        entryCode,
+        position,
+      )
+
+      /*
+       * 사보타주 응답에는 변경된 미션 목록이
+       * 포함되지 않으므로 방 정보를 다시 조회합니다.
+       */
+      const roomData =
+        await getRoom(entryCode)
+
+      const previousState = get()
+
+      set(
+        applyRoomData(
+          roomData,
+          previousState,
+          entryCode,
+        ),
+      )
+
+      return roomData
+    } catch (error) {
+      console.error(
+        '사보타주 오류:',
+        error.response?.status,
+        error.response?.data,
+        error,
+      )
+
+      set({
+        error: getErrorMessage(
+          error,
+          '사보타주 처리에 실패했습니다.',
+        ),
+      })
+
+      throw error
+    } finally {
+      set({
+        isLoading: false,
+      })
     }
   },
 }))
