@@ -361,18 +361,40 @@ const remainingSeconds = useMemo(() => {
     String(currentTurnMemberId) ===
       String(effectiveMyMemberId)
 
-  /*
-   * 최초 게임 페이지 진입 시 방 정보를 조회합니다.
-   */
-  useEffect(() => {
-    if (!entryCode) {
-      return
-    }
+ /*
+ * 게임 페이지 진입 시 방 정보를 조회하고,
+ * 이후 2초마다 최신 방 정보를 다시 조회합니다.
+ */
+useEffect(() => {
+  if (!entryCode) {
+    return undefined
+  }
 
+  /*
+   * 게임 페이지에 처음 들어왔을 때
+   * 방 정보를 즉시 한 번 조회합니다.
+   */
+  fetchRoom(entryCode).catch(() => {
+    // 오류 상태는 gameStore에서 처리합니다.
+  })
+
+  /*
+   * 이후 2초마다 방 정보를 다시 조회합니다.
+   */
+  const pollingId = window.setInterval(() => {
     fetchRoom(entryCode).catch(() => {
-      // 오류 상태는 gameStore에서 처리합니다.
+      // 폴링 중 발생한 오류는 gameStore에서 처리합니다.
     })
-  }, [entryCode, fetchRoom])
+  }, 2000)
+
+  /*
+   * 게임 페이지에서 나가면
+   * 반복 실행 중인 폴링을 종료합니다.
+   */
+  return () => {
+    window.clearInterval(pollingId)
+  }
+}, [entryCode, fetchRoom])
 
   /*
    * 게임 종료 결과를 서버의 winnerMemberId로 판단합니다.
