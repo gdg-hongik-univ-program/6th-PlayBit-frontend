@@ -240,13 +240,6 @@ function ResultPage() {
    * 기존 방에는 이미 게임 결과가 저장되어 있으므로
    * 새로운 게임을 하려면 새 방 생성 페이지로 이동합니다.
    */
-  const handleRestart = () => {
-    resetRoomState();
-
-    navigate("/create-room", {
-      replace: true,
-    });
-  };
 
   const handleGoHome = () => {
     resetRoomState();
@@ -371,20 +364,11 @@ function ResultPage() {
               {finalMessage}
             </p>
           </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={handleRestart}
-              className="flex-1 rounded-2xl bg-[#8B00FF] px-6 py-4 text-base font-black text-white shadow-lg shadow-purple-200 transition hover:-translate-y-0.5 hover:bg-[#7700DB]"
-            >
-              다시 플레이
-            </button>
-
+          <div className="flex justify-center">
             <button
               type="button"
               onClick={handleGoHome}
-              className="flex-1 rounded-2xl border-2 border-[#8B00FF] bg-white px-6 py-4 text-base font-black text-[#8B00FF] transition hover:bg-purple-50"
+              className="w-full max-w-sm rounded-2xl bg-[#8B00FF] px-6 py-4 text-base font-black text-white shadow-lg shadow-purple-200 transition hover:-translate-y-0.5 hover:bg-[#7700DB]"
             >
               메인으로 돌아가기
             </button>
