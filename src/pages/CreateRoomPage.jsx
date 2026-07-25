@@ -14,7 +14,7 @@ const categories = [
   },
   {
     id: 2,
-    apiValue: 'EXERCISE',
+    apiValue: 'WORKOUT',
     icon: '💪',
     title: '운동',
     description: '팔굽혀펴기 20개 · 30분 달리기 · 10분 스트레칭',
