@@ -209,7 +209,17 @@ function GamePage() {
   const fetchRoom = useGameStore(
     (state) => state.fetchRoom,
   )
+  
+  const connectRoomEvents = useGameStore(
+  (state) => state.connectRoomEvents,
+  )
 
+  const disconnectRoomEvents =
+  useGameStore(
+    (state) =>
+      state.disconnectRoomEvents,
+  )
+  
   /*
    * 서버에서 myMemberId를 주지 않는 상황을 대비하여
    * localStorage의 uuid를 보조값으로 사용합니다.
@@ -361,40 +371,48 @@ const remainingSeconds = useMemo(() => {
     String(currentTurnMemberId) ===
       String(effectiveMyMemberId)
 
- /*
- * 게임 페이지 진입 시 방 정보를 조회하고,
- * 이후 2초마다 최신 방 정보를 다시 조회합니다.
+/*
+ * 게임 페이지 진입 시 현재 방 정보를 한 번 조회하고
+ * 이후 변경 사항은 SSE로 실시간 수신합니다.
  */
 useEffect(() => {
   if (!entryCode) {
     return undefined
   }
 
-  /*
-   * 게임 페이지에 처음 들어왔을 때
-   * 방 정보를 즉시 한 번 조회합니다.
-   */
-  fetchRoom(entryCode).catch(() => {
-    // 오류 상태는 gameStore에서 처리합니다.
-  })
+  const initializeRoom = async () => {
+    try {
+      /*
+       * 페이지 최초 진입 시 현재 상태를 한 번 조회합니다.
+       */
+      await fetchRoom(entryCode)
+
+      /*
+       * 이후 방 상태 변경은 SSE로 받습니다.
+       */
+      connectRoomEvents(entryCode)
+    } catch (error) {
+      console.error(
+        '게임 페이지 초기화 오류:',
+        error,
+      )
+    }
+  }
+
+  initializeRoom()
 
   /*
-   * 이후 2초마다 방 정보를 다시 조회합니다.
-   */
-  const pollingId = window.setInterval(() => {
-    fetchRoom(entryCode).catch(() => {
-      // 폴링 중 발생한 오류는 gameStore에서 처리합니다.
-    })
-  }, 2000)
-
-  /*
-   * 게임 페이지에서 나가면
-   * 반복 실행 중인 폴링을 종료합니다.
+   * 게임 페이지를 벗어나면 SSE 연결을 종료합니다.
    */
   return () => {
-    window.clearInterval(pollingId)
+    disconnectRoomEvents()
   }
-}, [entryCode, fetchRoom])
+}, [
+  entryCode,
+  fetchRoom,
+  connectRoomEvents,
+  disconnectRoomEvents,
+])
 
   /*
    * 게임 종료 결과를 서버의 winnerMemberId로 판단합니다.

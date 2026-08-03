@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { connectRoomSSE } from '../api/sseApi'
 
 import {
   createRoom,
@@ -36,7 +37,16 @@ const initialState = {
 
   isLoading: false,
   error: null,
+
+  // SSE 연결 상태
+  sseStatus: 'DISCONNECTED',
 }
+
+/*
+ * fetchEventSource 연결 종료를 위한 컨트롤러입니다.
+ * Zustand 상태가 아니라 모듈 변수로 관리합니다.
+ */
+let roomSSEController = null
 
 const getErrorMessage = (
   error,
@@ -73,11 +83,6 @@ const hasOwn = (object, key) => {
 /**
  * GET /api/rooms/{entryCode} 응답을
  * Zustand 상태 구조로 변환합니다.
- *
- * 다음 두 응답 구조를 모두 처리합니다.
- *
- * 1. 방 정보가 최상위에 있는 경우
- * 2. 방 정보가 data.room 내부에 있는 경우
  */
 const applyRoomData = (
   data,
@@ -124,10 +129,10 @@ const applyRoomData = (
       : roomData.myMemberId
 
   /*
-   * FINISHED 응답 등에 myMemberId가 없다면
+   * FINISHED 응답 등에 myMemberId가 없으면
    * 이전 상태를 유지합니다.
    *
-   * 서버가 myMemberId: null을 반환하면
+   * 서버가 myMemberId: null을 명시하면
    * 관전자이므로 null로 저장합니다.
    */
   const myMemberId = hasMyMemberId
@@ -154,9 +159,6 @@ const applyRoomData = (
   /*
    * currentTurnMemberId가 응답에 없으면
    * 이전 상태를 유지합니다.
-   *
-   * 서버가 명시적으로 null을 반환한 경우에는
-   * null을 저장합니다.
    */
   const hasCurrentTurnMemberId = hasOwn(
     roomData,
@@ -234,14 +236,16 @@ const applyRoomData = (
       'turnStartedAt',
     )
       ? roomData.turnStartedAt
-      : previousState.turnStartedAt ?? null,
+      : previousState.turnStartedAt ??
+        null,
 
     turnDeadline: hasOwn(
       roomData,
       'turnDeadline',
     )
       ? roomData.turnDeadline
-      : previousState.turnDeadline ?? null,
+      : previousState.turnDeadline ??
+        null,
 
     currentTurnSabotaged: hasOwn(
       roomData,
@@ -273,7 +277,181 @@ const useGameStore = create((set, get) => ({
     })
   },
 
+  /**
+   * 특정 방의 SSE 스트림에 연결합니다.
+   *
+   * SSE payload에는 전체 방 데이터가 아니라
+   * { message: "MISSION_COMPLETED" } 형태의
+   * 변경 알림만 들어옵니다.
+   *
+   * 따라서 이벤트 수신 후 fetchRoom을 호출하여
+   * 최신 방 상태를 다시 가져옵니다.
+   */
+  connectRoomEvents: (entryCode) => {
+    const memberId =
+      localStorage.getItem('uuid')
+
+    if (!entryCode) {
+      console.error(
+        '[SSE] entryCode가 없습니다.',
+      )
+
+      return
+    }
+
+    if (!memberId) {
+      console.error(
+        '[SSE] localStorage에 uuid가 없습니다.',
+      )
+
+      set({
+        sseStatus: 'DISCONNECTED',
+      })
+
+      return
+    }
+
+    /*
+     * 기존 연결이 있다면 먼저 종료합니다.
+     */
+    if (roomSSEController) {
+      roomSSEController.abort()
+      roomSSEController = null
+    }
+
+    const controller =
+      new AbortController()
+
+    roomSSEController = controller
+
+    set({
+      sseStatus: 'CONNECTING',
+    })
+
+    connectRoomSSE({
+      entryCode,
+      memberId,
+      signal: controller.signal,
+
+      onOpen: () => {
+        /*
+         * 이미 다른 연결로 교체된 경우
+         * 이전 연결의 콜백은 무시합니다.
+         */
+        if (
+          roomSSEController !== controller
+        ) {
+          return
+        }
+
+        set({
+          sseStatus: 'CONNECTED',
+          error: null,
+        })
+      },
+
+      /*
+       * SSE 명세:
+       *
+       * event: room-update
+       * data: { "message": "MISSION_COMPLETED" }
+       */
+      onRoomUpdate: async (
+        payload,
+      ) => {
+        if (
+          controller.signal.aborted ||
+          roomSSEController !== controller
+        ) {
+          return
+        }
+
+        console.log(
+          '[SSE] 방 변경 알림:',
+          payload?.message,
+        )
+
+        try {
+          /*
+           * SSE는 변경 사실만 알려주므로
+           * 최신 방 상태를 GET으로 다시 조회합니다.
+           *
+           * showLoading: false로 호출하여
+           * 화면 전체 로딩이 깜빡이지 않도록 합니다.
+           */
+          await get().fetchRoom(
+            entryCode,
+            {
+              showLoading: false,
+              clearError: false,
+            },
+          )
+        } catch (error) {
+          console.error(
+            '[SSE] 이벤트 수신 후 방 조회 실패:',
+            error,
+          )
+        }
+      },
+
+      onError: () => {
+        if (
+          controller.signal.aborted ||
+          roomSSEController !== controller
+        ) {
+          return
+        }
+
+        set({
+          sseStatus: 'DISCONNECTED',
+        })
+      },
+    }).catch((error) => {
+      /*
+       * 페이지 이동 등으로 abort한 경우는
+       * 정상 종료이므로 오류로 처리하지 않습니다.
+       */
+      if (controller.signal.aborted) {
+        return
+      }
+
+      console.error(
+        '[SSE] 연결 실행 오류:',
+        error,
+      )
+
+      if (
+        roomSSEController === controller
+      ) {
+        roomSSEController = null
+
+        set({
+          sseStatus: 'DISCONNECTED',
+        })
+      }
+    })
+  },
+
+  /**
+   * 현재 SSE 연결을 종료합니다.
+   */
+  disconnectRoomEvents: () => {
+    if (roomSSEController) {
+      roomSSEController.abort()
+      roomSSEController = null
+    }
+
+    set({
+      sseStatus: 'DISCONNECTED',
+    })
+  },
+
   resetRoomState: () => {
+    if (roomSSEController) {
+      roomSSEController.abort()
+      roomSSEController = null
+    }
+
     set({
       ...initialState,
     })
@@ -364,9 +542,6 @@ const useGameStore = create((set, get) => ({
    * 카테고리 설정
    *
    * PATCH /api/rooms/{entryCode}/category
-   *
-   * 응답 data가 빈 객체이므로
-   * applyRoomData를 호출하지 않습니다.
    */
   selectCategory: async (
     entryCode,
@@ -478,25 +653,57 @@ const useGameStore = create((set, get) => ({
   /**
    * 방 정보 조회
    *
-   * GET /api/rooms/{entryCode}
+   * options.showLoading
+   * - true: 일반 조회, 로딩 상태 표시
+   * - false: SSE 갱신용 조회, 로딩 상태 숨김
+   *
+   * options.clearError
+   * - true: 조회 시작 시 기존 오류 제거
+   * - false: SSE 갱신 중 기존 오류 상태 유지
    */
-  fetchRoom: async (entryCode) => {
-    try {
-      set({
-        isLoading: true,
-        error: null,
-      })
+  fetchRoom: async (
+    entryCode,
+    options = {},
+  ) => {
+    const {
+      showLoading = true,
+      clearError = true,
+    } = options
 
-      const data = await getRoom(entryCode)
+    try {
+      if (showLoading) {
+        set({
+          isLoading: true,
+          ...(clearError
+            ? { error: null }
+            : {}),
+        })
+      } else if (clearError) {
+        set({
+          error: null,
+        })
+      }
+
+      const data =
+        await getRoom(entryCode)
+
       const previousState = get()
 
-      set(
-        applyRoomData(
+      set({
+        ...applyRoomData(
           data,
           previousState,
           entryCode,
         ),
-      )
+
+        /*
+         * SSE 갱신 조회에서는 기존 로딩 상태를
+         * 강제로 바꾸지 않습니다.
+         */
+        ...(showLoading
+          ? { isLoading: false }
+          : {}),
+      })
 
       return data
     } catch (error) {
@@ -507,18 +714,26 @@ const useGameStore = create((set, get) => ({
         error,
       )
 
-      set({
-        error: getErrorMessage(
-          error,
-          '게임 정보를 불러오지 못했습니다.',
-        ),
-      })
+      /*
+       * 일반 조회 실패는 사용자 화면에 표시합니다.
+       * SSE 백그라운드 갱신 실패는 콘솔에만 남깁니다.
+       */
+      if (showLoading) {
+        set({
+          error: getErrorMessage(
+            error,
+            '게임 정보를 불러오지 못했습니다.',
+          ),
+        })
+      }
 
       throw error
     } finally {
-      set({
-        isLoading: false,
-      })
+      if (showLoading) {
+        set({
+          isLoading: false,
+        })
+      }
     }
   },
 
@@ -543,8 +758,9 @@ const useGameStore = create((set, get) => ({
       )
 
       /*
-       * PATCH 응답에는 전체 missions와 players가
-       * 포함되지 않으므로 방 정보를 다시 조회합니다.
+       * 내 화면은 PATCH 직후 바로 갱신합니다.
+       * 상대 화면은 SSE room-update 이벤트를 받은 뒤
+       * fetchRoom을 호출하여 갱신됩니다.
        */
       const roomData =
         await getRoom(entryCode)
@@ -605,8 +821,9 @@ const useGameStore = create((set, get) => ({
       )
 
       /*
-       * 사보타주 응답에는 변경된 미션 목록이
-       * 포함되지 않으므로 방 정보를 다시 조회합니다.
+       * 내 화면은 PATCH 직후 바로 갱신합니다.
+       * 상대 화면은 SSE room-update 이벤트를 받은 뒤
+       * fetchRoom을 호출하여 갱신됩니다.
        */
       const roomData =
         await getRoom(entryCode)
