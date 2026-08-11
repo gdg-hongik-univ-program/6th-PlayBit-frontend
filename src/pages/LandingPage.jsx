@@ -1,4 +1,5 @@
 import LandingContent from '../components/LandingContent';
+import NotificationButton from '../components/NotificationButton'
 
 function LandingPage() {
   return (
@@ -11,6 +12,7 @@ function LandingPage() {
       justify-center
       "
     >
+      <NotificationButton />
       <LandingContent />
     </main>
   )
