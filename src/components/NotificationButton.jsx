@@ -63,8 +63,40 @@ function NotificationButton() {
   }
 
   return (
-    <button onClick={handleNotificationPermission}>
-      알림 받기
+    <button
+        onClick={handleNotificationPermission}
+        className="
+            flex
+            items-center
+            justify-center
+            gap-2
+            min-w-[130px]
+            h-12
+            px-5
+            rounded-xl
+
+            bg-[#8B00FF]
+            text-white
+            font-bold
+            text-sm
+
+            shadow-[0_4px_0_#6500B8]
+            border-2
+            border-[#8B00FF]
+
+            transition-all
+            duration-150
+
+            hover:bg-[#7A00E0]
+            hover:-translate-y-0.5
+            hover:shadow-[0_5px_0_#6500B8]
+
+            active:translate-y-1
+            active:shadow-none
+        "
+    >
+        <span className="text-lg">🔔</span>
+        <span>알림 받기</span>
     </button>
   )
 }
