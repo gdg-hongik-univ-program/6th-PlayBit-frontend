@@ -745,6 +745,8 @@ const useGameStore = create((set, get) => ({
   completeMission: async (
     entryCode,
     position,
+    image,
+    comment,
   ) => {
     try {
       set({
@@ -755,6 +757,8 @@ const useGameStore = create((set, get) => ({
       await completeMissionApi(
         entryCode,
         position,
+        image,
+        comment,
       )
 
       /*
@@ -808,6 +812,8 @@ const useGameStore = create((set, get) => ({
   sabotageMission: async (
     entryCode,
     position,
+    image,
+    comment,
   ) => {
     try {
       set({
@@ -818,6 +824,8 @@ const useGameStore = create((set, get) => ({
       await sabotageMissionApi(
         entryCode,
         position,
+        image,
+        comment,
       )
 
       /*

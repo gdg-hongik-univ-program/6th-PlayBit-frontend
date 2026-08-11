@@ -1,4 +1,6 @@
 import useGameStore from '../stores/gameStore'
+import { useState } from 'react'
+import MissionPhoto from './MissionPhoto'
 
 function BoardCell({
   entryCode,
@@ -33,6 +35,12 @@ function BoardCell({
   const isLoading = useGameStore(
     (state) => state.isLoading,
   )
+
+  const [isPhotoOpen, setIsPhotoOpen] =
+    useState(false)
+    
+  const [photoMode, setPhotoMode] =
+    useState(null)
 
   const completedByMemberId =
     mission.completedByMemberId
@@ -131,109 +139,139 @@ function BoardCell({
     !isAlreadySabotaged &&
     !currentTurnSabotaged
 
-  const onComplete = async () => {
+  const onComplete = () => {
     if (!canComplete) {
       return
     }
 
-    try {
-      await completeMission(
-        entryCode,
-        mission.position,
-      )
-    } catch (error) {
-      console.error(
-        '미션 완료 요청 실패:',
-        error,
-      )
-    }
+    setPhotoMode('complete')
+    setIsPhotoOpen(true)
   }
 
-  const onSabotage = async () => {
+  const onSabotage = () => {
     if (!canSabotage) {
       return
     }
 
+    setPhotoMode('sabotage')
+    setIsPhotoOpen(true)
+  }
+
+  const handlePhotoComplete = async ({
+    photoFile,
+    comment,
+  }) => {
     try {
-      await sabotageMission(
-        entryCode,
-        mission.position,
-      )
+      if (photoMode === 'complete') {
+        await completeMission(
+          entryCode,
+          mission.position,
+          photoFile,
+          comment,
+        )
+      }
+
+      if (photoMode === 'sabotage') {
+        await sabotageMission(
+          entryCode,
+          mission.position,
+          photoFile,
+          comment,
+        )
+      }
+
+      setIsPhotoOpen(false)
+      setPhotoMode(null)
     } catch (error) {
       console.error(
-        '사보타주 요청 실패:',
+        '사진 인증 요청 실패:',
         error,
       )
+
+      throw error
     }
   }
 
   return (
-    <article
-      className={`flex min-h-[150px] flex-col justify-between rounded-2xl border p-4 transition ${
-        isCompleted
-          ? 'border-[#D8C8FF] bg-[#F7F4FF]'
-          : 'border-[#E6DEF8] bg-white hover:border-[#8B00F5]'
-      }`}
-    >
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEE8FF] text-xs font-black text-[#8B00F5]">
-            {mission.position + 1}
-          </span>
-
-          {mark && (
-            <span className="text-2xl font-black text-[#8B00F5]">
-              {mark}
-            </span>
-          )}
-        </div>
-
-        <p className="break-keep text-sm font-semibold leading-5 text-[#302842]">
-          {mission.content}
-        </p>
-      </div>
-
-      <div className="mt-4 flex flex-col gap-2">
-        {isMyCompletedCell && (
-          <span className="rounded-full bg-[#EEE8FF] px-2 py-1 text-center text-xs font-semibold text-[#8B00F5]">
-            내가 완료
-          </span>
-        )}
-
-        {isAlreadySabotaged && (
-          <span className="rounded-full bg-[#FFF1F1] px-2 py-1 text-center text-xs font-semibold text-[#E05252]">
-            사보타주 사용됨
-          </span>
-        )}
-
-        {canComplete && (
-          <button
-            type="button"
-            onClick={onComplete}
-            disabled={isLoading}
-            className="h-9 rounded-xl bg-[#8B00F5] text-xs font-bold text-white transition hover:bg-[#7700D4] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isLoading
-              ? '처리 중...'
-              : '미션 완료'}
-          </button>
-        )}
-
-        {canSabotage && (
-          <button
-            type="button"
-            onClick={onSabotage}
-            disabled={isLoading}
-            className="h-9 rounded-xl bg-[#211A35] text-xs font-bold text-white transition hover:bg-[#33284F] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isLoading
-              ? '처리 중...'
-              : '사보타주 -6시간'}
-          </button>
-        )}
-      </div>
-    </article>
-  )
-}
+      <>
+        <article
+          className={`flex min-h-[150px] flex-col justify-between rounded-2xl border p-4 transition ${
+            isCompleted
+              ? 'border-[#D8C8FF] bg-[#F7F4FF]'
+              : 'border-[#E6DEF8] bg-white hover:border-[#8B00F5]'
+          }`}
+        >
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEE8FF] text-xs font-black text-[#8B00F5]">
+                {mission.position + 1}
+              </span>
+        
+              {mark && (
+                <span className="text-2xl font-black text-[#8B00F5]">
+                  {mark}
+                </span>
+              )}
+            </div>
+            
+            <p className="break-keep text-sm font-semibold leading-5 text-[#302842]">
+              {mission.content}
+            </p>
+          </div>
+            
+          <div className="mt-4 flex flex-col gap-2">
+            {isMyCompletedCell && (
+              <span className="rounded-full bg-[#EEE8FF] px-2 py-1 text-center text-xs font-semibold text-[#8B00F5]">
+                내가 완료
+              </span>
+            )}
+  
+            {isAlreadySabotaged && (
+              <span className="rounded-full bg-[#FFF1F1] px-2 py-1 text-center text-xs font-semibold text-[#E05252]">
+                사보타주 사용됨
+              </span>
+            )}
+  
+            {canComplete && (
+              <button
+                type="button"
+                onClick={onComplete}
+                disabled={isLoading}
+                className="h-9 rounded-xl bg-[#8B00F5] text-xs font-bold text-white transition hover:bg-[#7700D4] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isLoading
+                  ? '처리 중...'
+                  : '미션 완료'}
+              </button>
+            )}
+  
+            {canSabotage && (
+              <button
+                type="button"
+                onClick={onSabotage}
+                disabled={isLoading}
+                className="h-9 rounded-xl bg-[#211A35] text-xs font-bold text-white transition hover:bg-[#33284F] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isLoading
+                  ? '처리 중...'
+                  : '사보타주 -6시간'}
+              </button>
+            )}
+          </div>
+        </article>
+          
+        {/* 사진 + 코멘트 인증창 */}
+        <MissionPhoto
+          mission={mission}
+          isOpen={isPhotoOpen}
+          onClose={() => {
+            setIsPhotoOpen(false)
+            setPhotoMode(null)
+          }}
+          onComplete={handlePhotoComplete}
+        />
+      </>
+    )
+  }
 
 export default BoardCell

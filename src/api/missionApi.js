@@ -14,7 +14,7 @@ const getMemberId = () => {
  * 미션 완료
  * PATCH /api/rooms/{entryCode}/missions/{position}
  */
-export const completeMission = async (entryCode, position) => {
+export const completeMission = async (entryCode, position, image, comment) => {
   if (!entryCode) {
     throw new Error("entryCode가 필요합니다.");
   }
@@ -25,9 +25,17 @@ export const completeMission = async (entryCode, position) => {
 
   const memberId = getMemberId();
 
+  const formData = new FormData();
+
+  formData.append("image", image);
+
+  if (comment) {
+    formData.append("comment", comment);
+  }
+
   const response = await axiosInstance.patch(
     `/api/rooms/${entryCode}/missions/${position}`,
-    null,
+    formData,
     {
       headers: {
         "X-Member-Id": memberId,
@@ -42,7 +50,7 @@ export const completeMission = async (entryCode, position) => {
  * 상대방 미션 사보타주
  * PATCH /api/rooms/{entryCode}/missions/{position}/sabotage
  */
-export const sabotageMission = async (entryCode, position) => {
+export const sabotageMission = async (entryCode, position, image, comment) => {
   if (!entryCode) {
     throw new Error("entryCode가 필요합니다.");
   }
@@ -53,9 +61,17 @@ export const sabotageMission = async (entryCode, position) => {
 
   const memberId = getMemberId();
 
+  const formData = new FormData();
+
+  formData.append("image", image);
+
+  if (comment) {
+    formData.append("comment", comment);
+  }
+
   const response = await axiosInstance.patch(
     `/api/rooms/${entryCode}/missions/${position}/sabotage`,
-    null,
+    formData,
     {
       headers: {
         "X-Member-Id": memberId,
