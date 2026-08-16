@@ -457,21 +457,6 @@ const useGameStore = create((set, get) => ({
     })
   },
 
-  setRoomState: (
-    data,
-    fallbackEntryCode = null,
-  ) => {
-    const previousState = get()
-
-    set(
-      applyRoomData(
-        data,
-        previousState,
-        fallbackEntryCode,
-      ),
-    )
-  },
-
   /**
    * 방 생성
    *

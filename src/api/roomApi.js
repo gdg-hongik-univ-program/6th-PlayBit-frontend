@@ -121,10 +121,3 @@ export const getRoom = async (entryCode) => {
   return unwrapResponse(response)
 }
 
-const roomApi = {
-  createRoom,
-  updateRoomCategory,
-  getRoom,
-}
-
-export default roomApi
