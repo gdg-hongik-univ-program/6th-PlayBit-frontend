@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useGameStore from '../stores/gameStore'
+import useGameStore from '../features/game/model/gameStore'
 
 function JoinRoomPage() {
   const navigate = useNavigate()
@@ -9,7 +9,7 @@ function JoinRoomPage() {
   const [validationError, setValidationError] = useState('')
 
   const enterRoom = useGameStore((state) => state.enterRoom)
-  const isLoading = useGameStore((state) => state.isLoading)
+  const isRoomLoading = useGameStore((state) => state.isRoomLoading)
   const storeError = useGameStore((state) => state.error)
   const clearError = useGameStore((state) => state.clearError)
 
@@ -52,7 +52,7 @@ function JoinRoomPage() {
     navigate('/')
   }
 
-  const isButtonDisabled = entryCode.length !== 6 || isLoading
+  const isButtonDisabled = entryCode.length !== 6 || isRoomLoading
 
   return (
     <div className="min-h-screen bg-[#F8F6FF]">
@@ -151,7 +151,7 @@ function JoinRoomPage() {
                 disabled:shadow-none
               "
             >
-              {isLoading ? '참여 중...' : '참여하기'}
+              {isRoomLoading ? '참여 중...' : '참여하기'}
             </button>
           </form>
         </section>
