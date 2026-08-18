@@ -11,19 +11,9 @@ const isCurrentConnection = (controller) => {
 
 export const createRealtimeSlice = (set, get) => ({
   connectRoomEvents: (entryCode) => {
-    const memberId =
-      localStorage.getItem('uuid')
-
     if (!entryCode) {
       console.error(
         '[SSE] entryCode가 없습니다.',
-      )
-      return
-    }
-
-    if (!memberId) {
-      console.error(
-        '[SSE] localStorage에 uuid가 없습니다.',
       )
       return
     }
@@ -35,7 +25,6 @@ export const createRealtimeSlice = (set, get) => ({
 
     connectRoomSSE({
       entryCode,
-      memberId,
       signal: controller.signal,
 
       onOpen: () => {

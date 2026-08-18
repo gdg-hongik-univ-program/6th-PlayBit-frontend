@@ -125,13 +125,7 @@ function ResultPage() {
   const navigationState =
     location.state ?? {};
 
-  /*
-   * 새로고침 시 Store의 myMemberId가 사라질 수 있으므로
-   * localStorage의 uuid를 보조값으로 사용합니다.
-   */
-  const effectiveMyMemberId =
-    myMemberId ??
-    localStorage.getItem("uuid");
+  const effectiveMyMemberId = myMemberId;
 
   useEffect(() => {
     if (!entryCode) {
