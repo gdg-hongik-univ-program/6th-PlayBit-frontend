@@ -1,6 +1,7 @@
 import useGameStore from '../stores/gameStore'
 import { useState } from 'react'
 import MissionPhoto from './MissionPhoto'
+import MissionHistoryModal from './MissionHistoryModal'
 
 function BoardCell({
   entryCode,
@@ -41,6 +42,9 @@ function BoardCell({
     
   const [photoMode, setPhotoMode] =
     useState(null)
+
+  const [isHistoryOpen, setIsHistoryOpen] =
+    useState(false)
 
   const completedByMemberId =
     mission.completedByMemberId
@@ -225,6 +229,16 @@ function BoardCell({
                 내가 완료
               </span>
             )}
+
+            {isCompleted && (
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(true)}
+                className="h-9 rounded-xl border border-[#8B00F5] bg-white text-xs font-bold text-[#8B00F5] transition hover:bg-[#F7F4FF]"
+              >
+                미션 완료 인증 내역 보기
+              </button>
+            )}
   
             {isAlreadySabotaged && (
               <span className="rounded-full bg-[#FFF1F1] px-2 py-1 text-center text-xs font-semibold text-[#E05252]">
@@ -269,6 +283,12 @@ function BoardCell({
             setPhotoMode(null)
           }}
           onComplete={handlePhotoComplete}
+        />
+
+        <MissionHistoryModal
+          mission={mission}
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
         />
       </>
     )
