@@ -1,4 +1,4 @@
-import useGameStore from '../stores/gameStore'
+import useGameStore from '../features/game/model/gameStore'
 import { useState } from 'react'
 import MissionPhoto from './MissionPhoto'
 
@@ -32,8 +32,8 @@ function BoardCell({
     (state) => state.status,
   )
 
-  const isLoading = useGameStore(
-    (state) => state.isLoading,
+  const isMissionSubmitting = useGameStore(
+    (state) => state.isMissionSubmitting,
   )
 
   const [isPhotoOpen, setIsPhotoOpen] =
@@ -105,7 +105,7 @@ function BoardCell({
    */
   const isInteractionDisabled =
     disabled ||
-    isLoading ||
+    isMissionSubmitting ||
     status !== 'PLAYING'
 
   /*
@@ -236,10 +236,10 @@ function BoardCell({
               <button
                 type="button"
                 onClick={onComplete}
-                disabled={isLoading}
+                disabled={isMissionSubmitting}
                 className="h-9 rounded-xl bg-[#8B00F5] text-xs font-bold text-white transition hover:bg-[#7700D4] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isLoading
+                {isMissionSubmitting
                   ? '처리 중...'
                   : '미션 완료'}
               </button>
@@ -249,10 +249,10 @@ function BoardCell({
               <button
                 type="button"
                 onClick={onSabotage}
-                disabled={isLoading}
+                disabled={isMissionSubmitting}
                 className="h-9 rounded-xl bg-[#211A35] text-xs font-bold text-white transition hover:bg-[#33284F] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isLoading
+                {isMissionSubmitting
                   ? '처리 중...'
                   : '사보타주 -6시간'}
               </button>

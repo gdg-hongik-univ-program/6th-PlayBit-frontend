@@ -7,7 +7,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
-import useGameStore from '../stores/gameStore'
+import useGameStore from '../features/game/model/gameStore'
 import GameBoard from '../components/GameBoard'
 
 const WINNING_LINES = [
@@ -198,8 +198,8 @@ function GamePage() {
     (state) => state.status,
   )
 
-  const isLoading = useGameStore(
-    (state) => state.isLoading,
+  const isRoomLoading = useGameStore(
+    (state) => state.isRoomLoading,
   )
 
   const error = useGameStore(
@@ -519,7 +519,7 @@ useEffect(() => {
   ])
 
   if (
-    isLoading &&
+    isRoomLoading &&
     missions.length === 0
   ) {
     return (

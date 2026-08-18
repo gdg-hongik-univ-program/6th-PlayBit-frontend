@@ -4,7 +4,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import useGameStore from "../stores/gameStore";
+import useGameStore from "../features/game/model/gameStore";
 
 const RESULT_INFO = {
   win: {
@@ -102,8 +102,8 @@ function ResultPage() {
     (state) => state.status,
   );
 
-  const isLoading = useGameStore(
-    (state) => state.isLoading,
+  const isRoomLoading = useGameStore(
+    (state) => state.isRoomLoading,
   );
 
   const error = useGameStore(
@@ -249,7 +249,7 @@ function ResultPage() {
     });
   };
 
-  if (isLoading && !result) {
+  if (isRoomLoading && !result) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F5F0FF]">
         <p className="font-semibold text-[#302842]">

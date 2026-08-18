@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import RoomCodeCard from '../components/RoomCodeCard'
 import CategoryOption from '../components/CategoryOption'
-import useGameStore from '../stores/gameStore'
+import useGameStore from '../features/game/model/gameStore'
 
 const categories = [
   {
@@ -67,8 +67,8 @@ function CreateRoomPage() {
     (state) => state.fetchRoom,
   )
 
-  const isLoading = useGameStore(
-    (state) => state.isLoading,
+  const isRoomLoading = useGameStore(
+    (state) => state.isRoomLoading,
   )
 
   const error = useGameStore(
@@ -76,7 +76,7 @@ function CreateRoomPage() {
   )
 
   const isProcessing =
-    isLoading || isStarting
+    isRoomLoading || isStarting
 
   useEffect(() => {
     const createRoomOnPageEnter = async () => {
