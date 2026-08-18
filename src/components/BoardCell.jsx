@@ -236,7 +236,7 @@ function BoardCell({
                 onClick={() => setIsHistoryOpen(true)}
                 className="h-9 rounded-xl border border-[#8B00F5] bg-white text-xs font-bold text-[#8B00F5] transition hover:bg-[#F7F4FF]"
               >
-                미션 완료 인증 내역 보기
+                인증 내역 보기
               </button>
             )}
   
