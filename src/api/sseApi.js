@@ -7,7 +7,6 @@ const API_BASE_URL =
 
 export const connectRoomSSE = ({
   entryCode,
-  memberId,
   signal,
   onOpen,
   onRoomUpdate,
@@ -25,12 +24,6 @@ export const connectRoomSSE = ({
     )
   }
 
-  if (!memberId) {
-    throw new Error(
-      'SSE 연결에 필요한 memberId가 없습니다.',
-    )
-  }
-
   const baseUrl =
     API_BASE_URL.endsWith('/')
       ? API_BASE_URL.slice(0, -1)
@@ -42,13 +35,9 @@ export const connectRoomSSE = ({
 
   return fetchEventSource(url, {
     method: 'GET',
+    credentials: 'include',
 
     headers: {
-      /*
-       * SSE API 명세상 필수 헤더
-       */
-      'X-Member-Id': memberId,
-
       /*
        * ngrok 무료 경고 페이지 우회
        */

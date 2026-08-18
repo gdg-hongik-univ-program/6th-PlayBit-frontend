@@ -13,16 +13,6 @@ export const registerPlayer = async (entryCode) => {
 
   const role = player.Role ?? player.role
 
-  localStorage.setItem(`player-role-${entryCode}`, role)
-  localStorage.setItem(
-    `player-id-${entryCode}`,
-    String(player.playerId),
-  )
-  localStorage.setItem(
-    `player-member-id-${entryCode}`,
-    String(player.memberId),
-  )
-
   return {
     entryCode,
     playerId: player.playerId,

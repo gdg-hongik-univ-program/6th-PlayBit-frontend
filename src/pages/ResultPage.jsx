@@ -4,7 +4,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import useGameStore from "../stores/gameStore";
+import useGameStore from "../features/game/model/gameStore";
 
 const RESULT_INFO = {
   win: {
@@ -102,8 +102,8 @@ function ResultPage() {
     (state) => state.status,
   );
 
-  const isLoading = useGameStore(
-    (state) => state.isLoading,
+  const isRoomLoading = useGameStore(
+    (state) => state.isRoomLoading,
   );
 
   const error = useGameStore(
@@ -125,13 +125,7 @@ function ResultPage() {
   const navigationState =
     location.state ?? {};
 
-  /*
-   * 새로고침 시 Store의 myMemberId가 사라질 수 있으므로
-   * localStorage의 uuid를 보조값으로 사용합니다.
-   */
-  const effectiveMyMemberId =
-    myMemberId ??
-    localStorage.getItem("uuid");
+  const effectiveMyMemberId = myMemberId;
 
   useEffect(() => {
     if (!entryCode) {
@@ -249,7 +243,7 @@ function ResultPage() {
     });
   };
 
-  if (isLoading && !result) {
+  if (isRoomLoading && !result) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F5F0FF]">
         <p className="font-semibold text-[#302842]">

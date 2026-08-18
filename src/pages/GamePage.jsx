@@ -7,7 +7,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
-import useGameStore from '../stores/gameStore'
+import useGameStore from '../features/game/model/gameStore'
 import GameBoard from '../components/GameBoard'
 
 const WINNING_LINES = [
@@ -198,8 +198,8 @@ function GamePage() {
     (state) => state.status,
   )
 
-  const isLoading = useGameStore(
-    (state) => state.isLoading,
+  const isRoomLoading = useGameStore(
+    (state) => state.isRoomLoading,
   )
 
   const error = useGameStore(
@@ -220,13 +220,7 @@ function GamePage() {
       state.disconnectRoomEvents,
   )
   
-  /*
-   * 서버에서 myMemberId를 주지 않는 상황을 대비하여
-   * localStorage의 uuid를 보조값으로 사용합니다.
-   */
-  const effectiveMyMemberId =
-    myMemberId ??
-    localStorage.getItem('uuid')
+  const effectiveMyMemberId = myMemberId
 
 const [currentTime, setCurrentTime] = useState(
   () => Date.now(),
@@ -519,7 +513,7 @@ useEffect(() => {
   ])
 
   if (
-    isLoading &&
+    isRoomLoading &&
     missions.length === 0
   ) {
     return (
