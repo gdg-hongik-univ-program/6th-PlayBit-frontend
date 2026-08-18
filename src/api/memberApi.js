@@ -1,13 +1,9 @@
-import axiosInstance from "./axiosInstance";
+import axiosInstance from './axiosInstance'
 
-export const createMember = async () => {
-  const response = await axiosInstance.post("/api/members");
+export const updateNickname = async (nickname) => {
+  const response = await axiosInstance.patch('/api/members/nickname', {
+    nickname,
+  })
 
-  if (!response.data.success) {
-    throw new Error(
-      response.data.error?.message || "멤버 등록에 실패했습니다."
-    );
-  }
-
-  return response.data.data;
-};
+  return response.data
+}

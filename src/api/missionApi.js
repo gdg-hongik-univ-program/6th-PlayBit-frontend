@@ -1,15 +1,5 @@
 import axiosInstance from "./axiosInstance";
 
-const getMemberId = () => {
-  const memberId = localStorage.getItem("uuid");
-
-  if (!memberId) {
-    throw new Error("localStorage에 uuid가 없습니다.");
-  }
-
-  return memberId;
-};
-
 /**
  * 미션 완료
  * PATCH /api/rooms/{entryCode}/missions/{position}
@@ -23,8 +13,6 @@ export const completeMission = async (entryCode, position, image, comment) => {
     throw new Error("position이 필요합니다.");
   }
 
-  const memberId = getMemberId();
-
   const formData = new FormData();
 
   formData.append("image", image);
@@ -36,11 +24,6 @@ export const completeMission = async (entryCode, position, image, comment) => {
   const response = await axiosInstance.patch(
     `/api/rooms/${entryCode}/missions/${position}`,
     formData,
-    {
-      headers: {
-        "X-Member-Id": memberId,
-      },
-    },
   );
 
   return response.data.data;
@@ -59,8 +42,6 @@ export const sabotageMission = async (entryCode, position, image, comment) => {
     throw new Error("position이 필요합니다.");
   }
 
-  const memberId = getMemberId();
-
   const formData = new FormData();
 
   formData.append("image", image);
@@ -72,11 +53,6 @@ export const sabotageMission = async (entryCode, position, image, comment) => {
   const response = await axiosInstance.patch(
     `/api/rooms/${entryCode}/missions/${position}/sabotage`,
     formData,
-    {
-      headers: {
-        "X-Member-Id": memberId,
-      },
-    },
   );
 
   return response.data.data;
