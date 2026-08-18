@@ -220,13 +220,7 @@ function GamePage() {
       state.disconnectRoomEvents,
   )
   
-  /*
-   * 서버에서 myMemberId를 주지 않는 상황을 대비하여
-   * localStorage의 uuid를 보조값으로 사용합니다.
-   */
-  const effectiveMyMemberId =
-    myMemberId ??
-    localStorage.getItem('uuid')
+  const effectiveMyMemberId = myMemberId
 
 const [currentTime, setCurrentTime] = useState(
   () => Date.now(),
