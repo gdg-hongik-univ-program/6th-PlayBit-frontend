@@ -98,42 +98,49 @@ export const connectRoomSSE = ({
         entryCode,
       )
 
-      onOpen?.()
+      await onOpen?.()
     },
 
     onmessage(event) {
-  if (!event.data) {
-    return
-  }
+      if (!event.data) {
+        return
+      }
 
-  let payload
+      const eventName =
+        event.event || 'message'
+      let payload
 
-  try {
-    payload = JSON.parse(event.data)
-  } catch {
-    console.log(
-      'SSE 문자열 메시지 수신:',
-      {
-        eventName:
-          event.event || 'message',
-        message: event.data,
-      },
-    )
+      try {
+        payload = JSON.parse(event.data)
+      } catch {
+        payload = {
+          eventName,
+          message: event.data,
+        }
+      }
 
-    return
-  }
-
-  if (event.event !== 'room-update') {
-    return
-  }
-
-  onRoomUpdate?.(payload)
-},
+      /*
+       * 백엔드가 named event(room-update) 또는 기본 message 중
+       * 어느 형식으로 보내더라도 방 상태를 다시 조회합니다.
+       */
+      onRoomUpdate?.({
+        ...payload,
+        eventName,
+      })
+    },
 
     onclose() {
+      if (signal?.aborted) {
+        return
+      }
+
       console.log(
-        'SSE 연결 종료:',
+        'SSE 연결이 종료되어 재연결합니다:',
         entryCode,
+      )
+
+      throw new Error(
+        'SSE 연결이 예기치 않게 종료되었습니다.',
       )
     },
 
@@ -153,9 +160,9 @@ export const connectRoomSSE = ({
       onError?.(error)
 
       /*
-       * 500 등의 오류에서 무한 재연결 방지
+       * 일시적인 네트워크 오류는 3초 후 재연결합니다.
        */
-      throw error
+      return 3000
     },
   })
 }

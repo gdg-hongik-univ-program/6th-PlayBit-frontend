@@ -9,6 +9,8 @@ import {
 } from 'react-router-dom'
 import useGameStore from '../features/game/model/gameStore'
 import GameBoard from '../components/GameBoard'
+import MobileShell from '../components/MobileShell'
+import PixelMascot from '../components/PixelMascot'
 
 const WINNING_LINES = [
   [0, 1, 2],
@@ -377,14 +379,16 @@ useEffect(() => {
   const initializeRoom = async () => {
     try {
       /*
-       * 페이지 최초 진입 시 현재 상태를 한 번 조회합니다.
-       */
-      await fetchRoom(entryCode)
-
-      /*
-       * 이후 방 상태 변경은 SSE로 받습니다.
+       * SSE를 먼저 시작해 최초 방 조회와 구독 사이에 발생하는
+       * 두 번째 플레이어 입장 이벤트를 놓치지 않습니다.
        */
       connectRoomEvents(entryCode)
+
+      /*
+       * 페이지 최초 진입 시 현재 상태를 조회합니다.
+       * SSE 연결 직후에도 한 번 더 동기화합니다.
+       */
+      await fetchRoom(entryCode)
     } catch (error) {
       console.error(
         '게임 페이지 초기화 오류:',
@@ -407,6 +411,33 @@ useEffect(() => {
   connectRoomEvents,
   disconnectRoomEvents,
 ])
+
+/*
+ * 서버가 플레이어 입장 이벤트를 누락하거나 프록시가 SSE 메시지를
+ * 지연시키더라도 WAITING 화면에 고정되지 않도록 대기 중에만 보정합니다.
+ * PLAYING으로 전환되는 즉시 타이머가 정리됩니다.
+ */
+useEffect(() => {
+  if (!entryCode || status !== 'WAITING') {
+    return undefined
+  }
+
+  const intervalId = window.setInterval(() => {
+    fetchRoom(entryCode, {
+      showLoading: false,
+      clearError: false,
+    }).catch((syncError) => {
+      console.error(
+        '대기 중 방 상태 동기화 실패:',
+        syncError,
+      )
+    })
+  }, 3000)
+
+  return () => {
+    window.clearInterval(intervalId)
+  }
+}, [entryCode, status, fetchRoom])
 
   /*
    * 게임 종료 결과를 서버의 winnerMemberId로 판단합니다.
@@ -545,46 +576,39 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F4FF]">
-      <header className="flex h-16 items-center justify-between bg-white px-8 shadow-sm">
+    <MobileShell>
+      <header className="flex h-16 items-center justify-between px-5 pt-2">
         <button
           type="button"
           onClick={() =>
-            navigate('/')
+            navigate('/rooms')
           }
-          className="text-xl font-extrabold"
+          className="pixel-press text-2xl font-black"
         >
-          <span className="text-[#8B00F5]">
-            Play
-          </span>
-
-          <span className="text-[#211A35]">
-            Bit
-          </span>
+          ←
         </button>
 
         <p className="text-sm font-medium text-[#74698E]">
-          게임 보드
+          GAME
         </p>
 
         <div className="w-[62px]" />
       </header>
 
-      <main className="mx-auto w-full max-w-5xl px-6 py-10">
-        <section className="mb-6 rounded-3xl bg-white p-6 shadow-sm">
+      <main className="px-5 pb-8 pt-3">
+        <section className="mb-5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-2xl font-black text-[#211A35]">
-                게임 보드
+              <h1 className="pixel-title text-2xl font-black text-[#211A35]">
+                습관 빙고
               </h1>
 
               <p className="mt-1 text-sm text-[#8175A5]">
-                3개의 미션을 한 줄로
-                완성하면 승리합니다.
+                세 칸을 먼저 완성하면 승리해요.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-[#EEE8FF] px-5 py-3 text-center">
+            <div className="pixel-card px-4 py-2 text-center">
               <p className="text-xs font-semibold text-[#8B00F5]">
                 입장 코드
               </p>
@@ -595,8 +619,8 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="rounded-2xl bg-[#F7F4FF] p-4">
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <div className="pixel-card p-3">
               <p className="text-xs text-[#8175A5]">
                 내 역할
               </p>
@@ -606,7 +630,7 @@ useEffect(() => {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-[#F7F4FF] p-4">
+            <div className="pixel-card p-3">
               <p className="text-xs text-[#8175A5]">
                 게임 상태
               </p>
@@ -624,7 +648,7 @@ useEffect(() => {
               )}
             </div>
 
-            <div className="rounded-2xl bg-[#F7F4FF] p-4">
+            <div className="pixel-card p-3">
               <p className="text-xs text-[#8175A5]">
                 현재 턴
               </p>
@@ -650,12 +674,12 @@ useEffect(() => {
               )}
             </div>
 
-            <div className="rounded-2xl bg-[#F7F4FF] p-4">
+            <div className="pixel-card col-span-3 flex items-center justify-between p-3">
               <p className="text-xs text-[#8175A5]">
                 남은 시간
               </p>
 
-              <p className="mt-1 text-sm font-bold text-[#211A35]">
+              <p className="text-sm font-bold text-[#211A35]">
                 {formatRemainingTime(
                   remainingSeconds,
                 )}
@@ -663,6 +687,13 @@ useEffect(() => {
             </div>
           </div>
         </section>
+
+        <div className="mb-3 flex items-center gap-3">
+          <PixelMascot size="sm" />
+          <div className="pixel-card flex-1 p-4 text-xs font-black leading-5">
+            {isMyTurn ? '내 차례예요! 인증할 미션을 골라보세요.' : '상대 차례예요. 사보타주 기회를 노려보세요.'}
+          </div>
+        </div>
 
         <GameBoard
           entryCode={entryCode}
@@ -674,7 +705,7 @@ useEffect(() => {
           }
         />
       </main>
-    </div>
+    </MobileShell>
   )
 }
 
