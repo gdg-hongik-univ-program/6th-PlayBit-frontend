@@ -1,10 +1,68 @@
 @import "tailwindcss";
 
+:root {
+  font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  color: #151927;
+  background: #171717;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-width: 320px;
+  min-height: 100dvh;
+  background: #171717;
+}
+
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+
+.pixel-title {
+  font-family: "Courier New", ui-monospace, monospace;
+  letter-spacing: -0.07em;
+  text-shadow: 1px 1px 0 rgb(255 255 255 / 35%);
+}
+
+.pixel-card {
+  border: 2px solid rgb(33 40 67 / 18%);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 6px 0 rgb(61 72 124 / 15%);
+}
+
+.pixel-button {
+  min-height: 46px;
+  border: 2px solid #344070;
+  border-radius: 12px;
+  background: #7183d1;
+  padding: 0 18px;
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 0 4px 0 #344070;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.pixel-button:active, .pixel-press:active { transform: translateY(2px); }
+.pixel-button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.pixel-input {
+  width: 100%;
+  min-height: 48px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: white;
+  padding: 0 14px;
+  color: #151927;
+  outline: none;
+}
+
+.pixel-input:focus {
+  border-color: #515fa8;
+  box-shadow: 0 0 0 3px rgb(81 95 168 / 16%);
 }

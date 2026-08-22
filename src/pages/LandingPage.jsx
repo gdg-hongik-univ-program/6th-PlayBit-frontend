@@ -1,29 +1,27 @@
 import { useEffect, useState } from 'react'
 import { GoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
-
 import { googleLogin } from '../api/authApi'
 import { updateNickname } from '../api/memberApi'
+import MobileShell from '../components/MobileShell'
+import PixelMascot from '../components/PixelMascot'
+import TutorialSlides from '../components/TutorialSlides'
 import useAuthStore from '../stores/authStore'
 
 function LandingPage() {
   const navigate = useNavigate()
-
   const member = useAuthStore((state) => state.member)
-  const isAuthenticated = useAuthStore(
-    (state) => state.isAuthenticated,
-  )
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const setMember = useAuthStore((state) => state.setMember)
-
+  const [mode, setMode] = useState(() =>
+    isAuthenticated && member?.nickname === null
+      ? 'tutorial'
+      : 'login',
+  )
   const [nickname, setNickname] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  // member 상태를 보고 바로 계산
-  const isNicknameStep =
-    isAuthenticated && member?.nickname === null
-
-  // 기존 회원이면 바로 로비로 이동
   useEffect(() => {
     if (isAuthenticated && member?.nickname) {
       navigate('/lobby', { replace: true })
@@ -33,172 +31,77 @@ function LandingPage() {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setErrorMessage('')
-
       const idToken = credentialResponse.credential
-
-      if (!idToken) {
-        setErrorMessage(
-          'Google 로그인 정보를 가져오지 못했습니다.',
-        )
-        return
-      }
-
+      if (!idToken) throw new Error('Google 로그인 정보를 가져오지 못했습니다.')
       const response = await googleLogin(idToken)
       const loggedInMember = response.data
-
-      // authStore 갱신
       setMember(loggedInMember)
-
-      // 기존 회원
-      if (loggedInMember.nickname !== null) {
+      if (loggedInMember.nickname) {
         navigate('/lobby', { replace: true })
+      } else {
+        setMode('tutorial')
       }
-
-      // nickname === null이면
-      // member 상태가 바뀌면서 isNicknameStep이 자동으로 true가 됨
     } catch (error) {
       console.error('Google 로그인 실패:', error)
-
-      setErrorMessage(
-        error.response?.data?.error?.message ||
-          'Google 로그인에 실패했습니다.',
-      )
+      setErrorMessage(error.response?.data?.error?.message || error.message || 'Google 로그인에 실패했습니다.')
     }
   }
 
   const handleNicknameSubmit = async (event) => {
     event.preventDefault()
-
     const trimmedNickname = nickname.trim()
-
-    if (!trimmedNickname) {
-      setErrorMessage('닉네임을 입력해주세요.')
-      return
-    }
+    if (!trimmedNickname) return
 
     try {
       setIsSubmitting(true)
       setErrorMessage('')
-
       const response = await updateNickname(trimmedNickname)
-
-      if (response?.data) {
-        setMember(response.data)
-      } else {
-        setMember({
-          ...member,
-          nickname: trimmedNickname,
-        })
-      }
-
+      setMember(response?.data ?? { ...member, nickname: trimmedNickname })
       navigate('/lobby', { replace: true })
     } catch (error) {
-      console.error('닉네임 설정 실패:', error)
-
-      setErrorMessage(
-        error.response?.data?.error?.message ||
-          '닉네임 설정에 실패했습니다.',
-      )
+      setErrorMessage(error.response?.data?.error?.message || '닉네임 설정에 실패했습니다.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  if (mode === 'tutorial' && isAuthenticated) {
+    return <MobileShell><TutorialSlides onComplete={() => setMode('nickname')} /></MobileShell>
+  }
+
+  if (mode === 'nickname' && isAuthenticated) {
+    return (
+      <MobileShell>
+        <form onSubmit={handleNicknameSubmit} className="flex min-h-dvh flex-col px-6 pb-10 pt-24">
+          <span className="text-xs font-black text-[#485587]">WELCOME, PLAYER!</span>
+          <h1 className="pixel-title mt-3 text-3xl font-black">닉네임을 정해주세요</h1>
+          <p className="mt-3 text-sm leading-6 text-[#4C5575]">친구가 알아볼 수 있는 이름이면 좋아요. 2~10자로 입력해주세요.</p>
+          <PixelMascot size="md" className="mx-auto my-10" />
+          <label htmlFor="nickname" className="mb-2 text-xs font-black">닉네임</label>
+          <input id="nickname" className="pixel-input" value={nickname} onChange={(event) => setNickname(event.target.value.slice(0, 10))} placeholder="바나나 치" autoFocus />
+          {errorMessage && <p className="mt-3 rounded-xl bg-[#525E8C] px-4 py-3 text-xs font-bold text-white">⚠ {errorMessage}</p>}
+          <button type="submit" disabled={nickname.trim().length < 2 || isSubmitting} className="pixel-button mt-auto w-full">{isSubmitting ? '저장 중...' : '저장하기'}</button>
+        </form>
+      </MobileShell>
+    )
+  }
+
   return (
-    <main
-      className="
-        min-h-screen
-        bg-[#F8F5FF]
-        flex
-        items-center
-        justify-center
-        px-6
-      "
-    >
-      <div className="flex w-full max-w-md flex-col items-center text-center">
-        <h1 className="text-6xl font-bold text-[#8B00FF]">
-          PlayBit
-        </h1>
-
-        <p className="mt-4 text-lg text-gray-600">
-          친구와 함께 습관을 게임처럼 만들어보세요
-        </p>
-
-        {!isNicknameStep ? (
-          <div className="mt-10">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => {
-                setErrorMessage(
-                  'Google 로그인에 실패했습니다.',
-                )
-              }}
-            />
+    <MobileShell>
+      <main className="flex min-h-dvh flex-col items-center px-6 pb-12 pt-24 text-center">
+        <p className="text-xs font-black tracking-[0.28em] text-[#4D5989]">HABIT TIC-TAC-TOE</p>
+        <h1 className="pixel-title mt-3 text-5xl font-black tracking-[-0.12em]">PlayBit</h1>
+        <PixelMascot size="lg" className="mt-12" />
+        <p className="mt-6 break-keep text-sm font-bold leading-6 text-[#394260]">친구와 미션을 인증하고<br />세 칸을 먼저 완성해보세요.</p>
+        <div className="mt-auto flex w-full flex-col items-center gap-4">
+          <div className="w-full overflow-hidden rounded-xl bg-white p-1 shadow-[0_4px_0_#4A5687]">
+            <GoogleLogin width="260" onSuccess={handleGoogleSuccess} onError={() => setErrorMessage('Google 로그인에 실패했습니다.')} />
           </div>
-        ) : (
-          <form
-            onSubmit={handleNicknameSubmit}
-            className="mt-10 flex w-full flex-col items-center gap-4"
-          >
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800">
-                사용할 닉네임을 정해주세요
-              </h2>
-
-              <p className="mt-2 text-sm text-gray-500">
-                게임에서 다른 플레이어에게 표시되는 이름입니다.
-              </p>
-            </div>
-
-            <input
-              type="text"
-              value={nickname}
-              onChange={(event) =>
-                setNickname(event.target.value)
-              }
-              placeholder="닉네임 입력"
-              maxLength={20}
-              disabled={isSubmitting}
-              className="
-                w-full
-                rounded-xl
-                border
-                border-gray-300
-                bg-white
-                px-4
-                py-3
-                outline-none
-                focus:border-[#8B00FF]
-              "
-            />
-
-            <button
-              type="submit"
-              disabled={!nickname.trim() || isSubmitting}
-              className="
-                w-full
-                rounded-xl
-                bg-[#8B00FF]
-                px-4
-                py-3
-                font-semibold
-                text-white
-                disabled:cursor-not-allowed
-                disabled:opacity-50
-              "
-            >
-              {isSubmitting ? '설정 중...' : '시작하기'}
-            </button>
-          </form>
-        )}
-
-        {errorMessage && (
-          <p className="mt-4 text-sm text-red-500">
-            {errorMessage}
-          </p>
-        )}
-      </div>
-    </main>
+          {errorMessage && <p className="text-xs font-bold text-[#9C3434]">{errorMessage}</p>}
+          <p className="text-[10px] text-[#596486]">계속하면 서비스 이용약관에 동의한 것으로 간주합니다.</p>
+        </div>
+      </main>
+    </MobileShell>
   )
 }
 

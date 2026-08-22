@@ -5,6 +5,8 @@ import {
   useParams,
 } from "react-router-dom";
 import useGameStore from "../features/game/model/gameStore";
+import MobileShell from "../components/MobileShell";
+import PixelMascot from "../components/PixelMascot";
 
 const RESULT_INFO = {
   win: {
@@ -238,7 +240,7 @@ function ResultPage() {
   const handleGoHome = () => {
     resetRoomState();
 
-    navigate("/", {
+    navigate("/lobby", {
       replace: true,
     });
   };
@@ -296,30 +298,28 @@ function ResultPage() {
       : `나는 ${playerMissionCount}개, 상대는 ${opponentMissionCount}개의 미션을 차지했습니다.`;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#F5F0FF] via-white to-[#EEE6FF] px-4 py-10">
-      <section className="w-full max-w-3xl overflow-hidden rounded-[32px] border border-purple-100 bg-white shadow-[0_25px_70px_rgba(86,28,135,0.18)]">
+    <MobileShell>
+      <main className="flex min-h-dvh flex-col px-5 pb-8 pt-12">
+      <section className="flex flex-1 flex-col">
         <div
-          className={`px-6 py-12 text-center text-white ${currentResult.headerStyle}`}
+          className="text-center"
         >
-          <div className="mb-4 text-7xl">
-            {currentResult.icon}
-          </div>
-
-          <p className="mb-2 text-sm font-bold tracking-[0.3em] text-white/70">
+          <p className="mb-2 text-xs font-bold tracking-[0.3em] text-[#53608B]">
             GAME RESULT
           </p>
 
-          <h1 className="text-5xl font-black tracking-tight md:text-6xl">
+          <h1 className="pixel-title text-5xl font-black tracking-tight">
             {currentResult.title}
           </h1>
 
-          <p className="mt-4 text-base text-white/80 md:text-lg">
+          <p className="mt-3 text-sm font-bold text-[#59627F]">
             {currentResult.description}
           </p>
+          <PixelMascot size="lg" className="mx-auto mt-5" />
         </div>
 
-        <div className="p-6 md:p-10">
-          <div className="mb-8 grid gap-4 md:grid-cols-2">
+        <div className="mt-auto">
+          <div className="mb-5 grid grid-cols-2 gap-3">
             <ResultCard
               title="나"
               missionCount={
@@ -349,7 +349,7 @@ function ResultPage() {
             />
           </div>
 
-          <div className="mb-8 rounded-2xl bg-[#F8F5FC] px-5 py-5 text-center">
+          <div className="pixel-card mb-5 px-5 py-4 text-center">
             <p className="text-sm font-semibold text-gray-500">
               최종 결과
             </p>
@@ -362,14 +362,15 @@ function ResultPage() {
             <button
               type="button"
               onClick={handleGoHome}
-              className="w-full max-w-sm rounded-2xl bg-[#8B00FF] px-6 py-4 text-base font-black text-white shadow-lg shadow-purple-200 transition hover:-translate-y-0.5 hover:bg-[#7700DB]"
+              className="pixel-button w-full"
             >
               메인으로 돌아가기
             </button>
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </MobileShell>
   );
 }
 
@@ -386,7 +387,7 @@ function ResultCard({
 
   return (
     <article
-      className={`relative rounded-3xl border-2 p-6 ${
+      className={`relative rounded-2xl border-2 p-4 ${
         isWinner
           ? "border-[#8B00FF] bg-purple-50"
           : isDraw

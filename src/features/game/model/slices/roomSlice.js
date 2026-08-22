@@ -1,7 +1,7 @@
 import {
   createRoom,
   getRoom,
-  updateRoomCategory,
+  setRoom,
 } from '../../../../api/roomApi'
 import { registerPlayer } from '../../../../services/playerService'
 import { getErrorMessage } from '../../lib/getErrorMessage'
@@ -18,7 +18,10 @@ export const createRoomSlice = (set, get) => ({
     set({ ...initialGameState })
   },
 
-  createNewRoom: async () => {
+  createNewRoom: async ({
+    category,
+    roomName,
+  }) => {
     try {
       set({
         isRoomLoading: true,
@@ -27,12 +30,18 @@ export const createRoomSlice = (set, get) => ({
 
       const data = await createRoom()
 
+      await setRoom(data.entryCode, {
+        category,
+        roomName,
+      })
+
       set({
         room: {
           roomId: null,
           entryCode: data.entryCode,
           status: 'WAITING',
-          category: null,
+          category,
+          roomName,
         },
         missions: [],
         players: [],
@@ -46,7 +55,11 @@ export const createRoomSlice = (set, get) => ({
         status: 'WAITING',
       })
 
-      return data
+      return {
+        ...data,
+        category,
+        roomName,
+      }
     } catch (error) {
       console.error(
         '방 생성 오류:',
@@ -59,56 +72,6 @@ export const createRoomSlice = (set, get) => ({
         error: getErrorMessage(
           error,
           '방 생성에 실패했습니다.',
-        ),
-      })
-
-      throw error
-    } finally {
-      set({ isRoomLoading: false })
-    }
-  },
-
-  selectCategory: async (
-    entryCode,
-    categoryCode,
-  ) => {
-    try {
-      set({
-        isRoomLoading: true,
-        error: null,
-      })
-
-      await updateRoomCategory(
-        entryCode,
-        categoryCode,
-      )
-
-      set((state) => ({
-        room: {
-          ...state.room,
-          entryCode,
-          category: categoryCode,
-          status: 'WAITING',
-        },
-        status: 'WAITING',
-      }))
-
-      return {
-        entryCode,
-        category: categoryCode,
-      }
-    } catch (error) {
-      console.error(
-        '카테고리 설정 오류:',
-        error.response?.status,
-        error.response?.data,
-        error,
-      )
-
-      set({
-        error: getErrorMessage(
-          error,
-          '카테고리 설정에 실패했습니다.',
         ),
       })
 

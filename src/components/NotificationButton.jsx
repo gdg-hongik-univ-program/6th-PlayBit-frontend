@@ -11,7 +11,7 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)))
 }
 
-function NotificationButton() {
+function NotificationButton({ compact = false }) {
   const handleNotificationPermission = async () => {
     if (!('Notification' in window)) {
       alert('이 브라우저는 알림 기능을 지원하지 않습니다.')
@@ -64,8 +64,10 @@ function NotificationButton() {
 
   return (
     <button
+        type="button"
         onClick={handleNotificationPermission}
-        className="
+        className={compact ?
+          'rounded-full bg-[#63B86D] px-3 py-1 text-[10px] font-black text-white' : `
             flex
             items-center
             justify-center
@@ -93,10 +95,10 @@ function NotificationButton() {
 
             active:translate-y-1
             active:shadow-none
-        "
+        `}
     >
-        <span className="text-lg">🔔</span>
-        <span>알림 받기</span>
+        {!compact && <span className="text-lg">🔔</span>}
+        <span>{compact ? '설정' : '알림 받기'}</span>
     </button>
   )
 }
