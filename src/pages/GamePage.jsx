@@ -11,6 +11,7 @@ import useGameStore from '../features/game/model/gameStore'
 import GameBoard from '../components/GameBoard'
 import MobileShell from '../components/MobileShell'
 import PixelMascot from '../components/PixelMascot'
+import arrowIcon from '../assets/arrow-icon.png'
 
 const WINNING_LINES = [
   [0, 1, 2],
@@ -576,137 +577,60 @@ useEffect(() => {
   }
 
   return (
-    <MobileShell>
-      <header className="flex h-16 items-center justify-between px-5 pt-2">
+    <MobileShell bgColor="bg-white">
+      <header className="flex items-center justify-between px-4 pb-3 pt-[60px]">
         <button
           type="button"
-          onClick={() =>
-            navigate('/rooms')
-          }
-          className="pixel-press text-2xl font-black"
+          onClick={() => navigate('/rooms')}
+          className="flex h-9 w-9 items-center justify-center hover:opacity-80 transition-opacity"
         >
-          ←
+          <img src={arrowIcon} alt="뒤로 가기" className="h-full w-full object-contain" />
         </button>
-
-        <p className="text-sm font-medium text-[#74698E]">
-          GAME
-        </p>
-
-        <div className="w-[62px]" />
       </header>
 
-      <main className="px-5 pb-8 pt-3">
-        <section className="mb-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="pixel-title text-2xl font-black text-[#211A35]">
-                습관 빙고
-              </h1>
-
-              <p className="mt-1 text-sm text-[#8175A5]">
-                세 칸을 먼저 완성하면 승리해요.
-              </p>
-            </div>
-
-            <div className="pixel-card px-4 py-2 text-center">
-              <p className="text-xs font-semibold text-[#8B00F5]">
-                입장 코드
-              </p>
-
-              <p className="mt-1 text-xl font-black tracking-widest text-[#211A35]">
-                {entryCode}
-              </p>
-            </div>
+      <main className="flex flex-col flex-1 px-5 pb-8 pt-4">
+        <section className="mb-10 flex justify-between px-6">
+          <div className="flex flex-col items-center">
+            <p className="text-xs font-black">내 역할</p>
+            <p className="mt-2 text-2xl font-black pixel-title">{effectiveMyRole ?? '-'}</p>
           </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            <div className="pixel-card p-3">
-              <p className="text-xs text-[#8175A5]">
-                내 역할
-              </p>
-
-              <p className="mt-1 text-xl font-black text-[#8B00F5]">
-                {effectiveMyRole ?? '-'}
-              </p>
-            </div>
-
-            <div className="pixel-card p-3">
-              <p className="text-xs text-[#8175A5]">
-                게임 상태
-              </p>
-
-              <p className="mt-1 text-sm font-bold text-[#211A35]">
-                {status}
-              </p>
-
-              {currentTurnNumber !==
-                null && (
-                <p className="mt-1 text-xs text-[#8175A5]">
-                  {currentTurnNumber}번째
-                  턴
-                </p>
-              )}
-            </div>
-
-            <div className="pixel-card p-3">
-              <p className="text-xs text-[#8175A5]">
-                현재 턴
-              </p>
-
-              <p className="mt-1 text-sm font-bold text-[#211A35]">
-                {currentTurnPlayer
-                  ? `${currentTurnPlayer.role} 턴`
-                  : '-'}
-              </p>
-
-              <p className="mt-1 text-xs text-[#8175A5]">
-                {currentTurnPlayer
-                  ? isMyTurn
-                    ? '내 턴입니다'
-                    : '상대 턴입니다'
-                  : '게임 시작 대기 중'}
-              </p>
-
-              {currentTurnSabotaged && (
-                <p className="mt-1 text-xs font-semibold text-red-500">
-                  이번 턴 사보타주 사용됨
-                </p>
-              )}
-            </div>
-
-            <div className="pixel-card col-span-3 flex items-center justify-between p-3">
-              <p className="text-xs text-[#8175A5]">
-                남은 시간
-              </p>
-
-              <p className="text-sm font-bold text-[#211A35]">
-                {formatRemainingTime(
-                  remainingSeconds,
-                )}
-              </p>
-            </div>
+          <div className="flex flex-col items-center">
+            <p className="text-xs font-black">현재 턴</p>
+            <p className="mt-2 text-2xl font-black pixel-title">
+              {currentTurnPlayer?.role ?? 
+                (currentTurnMemberId 
+                  ? (String(currentTurnMemberId) === String(effectiveMyMemberId) 
+                      ? effectiveMyRole 
+                      : (effectiveMyRole === 'X' ? 'O' : 'X'))
+                  : '-')}
+            </p>
+          </div>
+          <div className="flex flex-col items-center">
+            <p className="text-xs font-black">남은 시간</p>
+            <p className="mt-2 text-xl font-black pixel-title tracking-widest">{formatRemainingTime(remainingSeconds)}</p>
           </div>
         </section>
-
-        <div className="mb-3 flex items-center gap-3">
-          <PixelMascot size="sm" />
-          <div className="pixel-card flex-1 p-4 text-xs font-black leading-5">
-            {isMyTurn ? '내 차례예요! 인증할 미션을 골라보세요.' : '상대 차례예요. 사보타주 기회를 노려보세요.'}
-          </div>
-        </div>
 
         <GameBoard
           entryCode={entryCode}
           missions={missions}
           players={players}
-          disabled={
-            status !== 'PLAYING' ||
-            !effectiveMyMemberId
-          }
+          disabled={status !== 'PLAYING' || !effectiveMyMemberId}
         />
+
+        <div className="mt-auto flex items-end gap-3 px-2">
+          <div className="w-[100px] flex-shrink-0">
+            <PixelMascot size="custom" className="w-full" />
+          </div>
+          <div className="relative flex-1 rounded-[24px] rounded-bl-none bg-[#96E4D6] p-4 text-xs font-black leading-5 min-h-[100px] shadow-sm mb-4">
+            <div className="absolute -bottom-4 left-0 w-0 h-0 border-t-[16px] border-t-[#96E4D6] border-r-[16px] border-r-transparent"></div>
+            {isMyTurn ? '내 차례예요! 인증할 미션을 골라보세요.' : '상대 차례예요. 사보타주 기회를 노려보세요.'}
+          </div>
+        </div>
       </main>
     </MobileShell>
   )
 }
 
 export default GamePage
+

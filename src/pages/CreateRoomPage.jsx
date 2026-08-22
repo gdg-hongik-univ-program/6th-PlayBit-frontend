@@ -2,14 +2,21 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileShell from '../components/MobileShell'
 import PageHeader from '../components/PageHeader'
+import Button from '../components/Button'
 import useGameStore from '../features/game/model/gameStore'
 
+import studyImg from '../assets/study.png'
+import workoutImg from '../assets/workout.png'
+import healthImg from '../assets/health.png'
+import hobbyImg from '../assets/hobby.png'
+import lifeImg from '../assets/life.png'
+
 const categories = [
-  { apiValue: 'STUDY', icon: '📚', title: '공부' },
-  { apiValue: 'WORKOUT', icon: '💪', title: '운동' },
-  { apiValue: 'HEALTH', icon: '🌿', title: '건강' },
-  { apiValue: 'HOBBY', icon: '🎨', title: '취미' },
-  { apiValue: 'LIFE', icon: '🏠', title: '일상생활' },
+  { apiValue: 'STUDY', icon: studyImg, title: '공부' },
+  { apiValue: 'WORKOUT', icon: workoutImg, title: '운동' },
+  { apiValue: 'HEALTH', icon: healthImg, title: '건강' },
+  { apiValue: 'HOBBY', icon: hobbyImg, title: '취미' },
+  { apiValue: 'LIFE', icon: lifeImg, title: '일상생활' },
 ]
 
 function CreateRoomPage() {
@@ -34,34 +41,79 @@ function CreateRoomPage() {
       })
       await enterRoom(roomData.entryCode)
       await fetchRoom(roomData.entryCode)
-      navigate(`/rooms/${roomData.entryCode}/game`)
+      navigate('/rooms', { replace: true })
     } catch (createError) {
-      console.error('게임 시작 준비 실패:', createError)
+      console.error('방 생성 실패:', createError)
     } finally {
       setIsStarting(false)
     }
   }
 
   return (
-    <MobileShell>
+    <MobileShell bgColor="bg-white">
       <PageHeader title="방 만들기" onBack={() => navigate('/rooms')} />
-      <main className="flex min-h-[calc(100dvh-4rem)] flex-col px-5 pb-8 pt-4">
-        <section>
-          <div className="flex items-center justify-between"><h2 className="text-xs font-black">카테고리 선택</h2><span className="text-[9px] text-[#687292]">선택해주세요</span></div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {categories.map((category) => (
-              <button key={category.apiValue} type="button" onClick={() => setSelectedCategory(category)} className={`pixel-card flex min-h-20 flex-col items-center justify-center gap-2 p-3 text-xs font-black ${selectedCategory?.apiValue === category.apiValue ? '!border-[#4559AE] !bg-[#E8ECFF]' : ''}`}><span className="text-2xl">{category.icon}</span>{category.title}</button>
+      <main className="flex min-h-[calc(100dvh-112px)] flex-col px-6 pb-12 pt-8 text-center sm:min-h-0" style={{ minHeight: 'calc(100dvh - 112px)' }}>
+        
+        {/* Room Name Input */}
+        <section className="mb-12 flex flex-col items-start w-full px-2">
+          <label htmlFor="roomName" className="pixel-title text-xl font-black text-[#171717]">방 이름을 입력하세요</label>
+          <input 
+            id="roomName" 
+            value={roomName} 
+            onChange={(event) => setRoomName(event.target.value.slice(0, 20))} 
+            className="pixel-input mt-5 w-full text-left text-lg font-bold" 
+            placeholder="갓생 도전" 
+          />
+        </section>
+
+        {/* Categories */}
+        <section className="flex flex-col items-center px-2 w-full">
+          <h2 className="mb-6 self-start pixel-title text-xl font-black text-[#171717]">카테고리를 선택하세요</h2>
+          <div className="flex justify-center gap-8 w-full mb-6">
+            {categories.slice(0, 2).map((category) => (
+              <button 
+                key={category.apiValue} 
+                type="button" 
+                onClick={() => setSelectedCategory(category)} 
+                className={`flex w-[104px] h-[120px] flex-col items-center justify-center gap-3 rounded-3xl border-[3px] transition-all ${selectedCategory?.apiValue === category.apiValue ? 'border-[#00D0B3] bg-[#E5FAF7] scale-105 shadow-md' : 'border-[#F1F2F5] bg-[#F8F9FB]'}`}
+              >
+                <img src={category.icon} alt={category.title} className="w-[52px] h-[52px] object-contain" />
+                <span className="text-sm font-black text-[#171717]">{category.title}</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex justify-center gap-4 w-full">
+            {categories.slice(2, 5).map((category) => (
+              <button 
+                key={category.apiValue} 
+                type="button" 
+                onClick={() => setSelectedCategory(category)} 
+                className={`flex w-[104px] h-[120px] flex-col items-center justify-center gap-3 rounded-3xl border-[3px] transition-all ${selectedCategory?.apiValue === category.apiValue ? 'border-[#00D0B3] bg-[#E5FAF7] scale-105 shadow-md' : 'border-[#F1F2F5] bg-[#F8F9FB]'}`}
+              >
+                <img src={category.icon} alt={category.title} className="w-[52px] h-[52px] object-contain" />
+                <span className="text-sm font-black text-[#171717]">{category.title}</span>
+              </button>
             ))}
           </div>
         </section>
-        <section className="mt-8">
-          <label htmlFor="roomName" className="text-xs font-black">방 이름을 입력하세요</label>
-          <input id="roomName" value={roomName} onChange={(event) => setRoomName(event.target.value.slice(0, 20))} className="pixel-input mt-3" placeholder="바나나 치" />
-          <div className="mt-3 flex items-center justify-between rounded-xl bg-[#535F8B] px-4 py-3 text-[10px] font-bold text-white"><span>⚠ 이미 사용중인 방 이름이면 다시 시도해주세요.</span></div>
-        </section>
-        <section className="pixel-card mt-6 px-4 py-3"><p className="text-[10px] font-bold text-[#707996]">방을 생성하면 친구에게 공유할 6자리 입장 코드가 자동으로 발급됩니다.</p></section>
-        {error && <p className="mt-4 text-xs font-bold text-[#9C3434]">{error}</p>}
-        <button type="button" onClick={handleCreate} disabled={!selectedCategory || !roomName.trim() || isProcessing} className="pixel-button mt-auto w-full">{isProcessing ? '방 준비 중...' : '방 생성하기'}</button>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-8 flex items-center justify-center gap-2 rounded-full bg-black/50 px-5 py-3 text-xs font-black text-white w-fit mx-auto">
+            <span className="text-yellow-400">⚠️</span>
+            이미 사용중인 방 이름이에요. 다시 시도해주세요.
+          </div>
+        )}
+
+        {/* Submit Button */}
+        <Button 
+          type="button" 
+          onClick={handleCreate} 
+          disabled={!selectedCategory || !roomName.trim() || isProcessing} 
+          className="mt-10 w-[240px] mx-auto"
+        >
+          {isProcessing ? '방 준비 중...' : '방 생성하기'}
+        </Button>
       </main>
     </MobileShell>
   )

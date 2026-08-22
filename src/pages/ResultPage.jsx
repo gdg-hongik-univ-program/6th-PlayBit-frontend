@@ -1,433 +1,124 @@
-import { useEffect, useMemo } from "react";
-import {
-  useLocation,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
-import useGameStore from "../features/game/model/gameStore";
-import MobileShell from "../components/MobileShell";
-import PixelMascot from "../components/PixelMascot";
+import { useEffect, useMemo } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import useGameStore from '../features/game/model/gameStore'
+import MobileShell from '../components/MobileShell'
 
-const RESULT_INFO = {
-  win: {
-    icon: "🏆",
-    title: "승리!",
-    description:
-      "가로, 세로 또는 대각선으로 미션 3개를 완성했습니다.",
-    headerStyle:
-      "bg-gradient-to-r from-[#8B00FF] to-[#B44CFF]",
-  },
+import victoryImg from '../assets/victory.png'
+import loseImg from '../assets/lose.png'
+import drawImg from '../assets/draw.png'
+import hansimWonImg from '../assets/hansim_won.png'
+import hansimLoseImg from '../assets/hansimlose.png'
+import hansimDrawImg from '../assets/hansimdraw.png'
 
-  lose: {
-    icon: "💀",
-    title: "패배",
-    description:
-      "상대가 가로, 세로 또는 대각선으로 미션 3개를 완성했습니다.",
-    headerStyle:
-      "bg-gradient-to-r from-[#332B46] to-[#171329]",
-  },
+const RESULT_ASSETS = {
+  win: { title: victoryImg, mascot: hansimWonImg },
+  lose: { title: loseImg, mascot: hansimLoseImg },
+  draw: { title: drawImg, mascot: hansimDrawImg },
+}
 
-  draw: {
-    icon: "🤝",
-    title: "무승부",
-    description:
-      "보드가 모두 채워졌지만 아무도 한 줄을 완성하지 못했습니다.",
-    headerStyle:
-      "bg-gradient-to-r from-[#6B7280] to-[#374151]",
-  },
-};
-
-const isSameMember = (
-  firstMemberId,
-  secondMemberId,
-) => {
-  if (
-    firstMemberId === null ||
-    firstMemberId === undefined ||
-    secondMemberId === null ||
-    secondMemberId === undefined
-  ) {
-    return false;
+const isSameMember = (firstMemberId, secondMemberId) => {
+  if (firstMemberId === null || firstMemberId === undefined || secondMemberId === null || secondMemberId === undefined) {
+    return false
   }
-
-  return (
-    String(firstMemberId) ===
-    String(secondMemberId)
-  );
-};
-
-const countCompletedMissions = (
-  missions,
-  memberId,
-) => {
-  if (
-    memberId === null ||
-    memberId === undefined
-  ) {
-    return 0;
-  }
-
-  return missions.filter((mission) =>
-    isSameMember(
-      mission.completedByMemberId,
-      memberId,
-    ),
-  ).length;
-};
+  return String(firstMemberId) === String(secondMemberId)
+}
 
 function ResultPage() {
-  const { entryCode } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { entryCode } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  const room = useGameStore(
-    (state) => state.room,
-  );
+  const room = useGameStore((state) => state.room)
+  const myMemberId = useGameStore((state) => state.myMemberId)
+  const winnerMemberId = useGameStore((state) => state.winnerMemberId)
+  const status = useGameStore((state) => state.status)
+  const isRoomLoading = useGameStore((state) => state.isRoomLoading)
+  const error = useGameStore((state) => state.error)
+  const fetchRoom = useGameStore((state) => state.fetchRoom)
+  const resetRoomState = useGameStore((state) => state.resetRoomState)
 
-  const missions = useGameStore(
-    (state) => state.missions,
-  );
-
-  const players = useGameStore(
-    (state) => state.players,
-  );
-
-  const myMemberId = useGameStore(
-    (state) => state.myMemberId,
-  );
-
-  const winnerMemberId = useGameStore(
-    (state) => state.winnerMemberId,
-  );
-
-  const status = useGameStore(
-    (state) => state.status,
-  );
-
-  const isRoomLoading = useGameStore(
-    (state) => state.isRoomLoading,
-  );
-
-  const error = useGameStore(
-    (state) => state.error,
-  );
-
-  const fetchRoom = useGameStore(
-    (state) => state.fetchRoom,
-  );
-
-  const resetRoomState = useGameStore(
-    (state) => state.resetRoomState,
-  );
-
-  /*
-   * GamePage에서 navigate로 전달한 값입니다.
-   * 서버 조회가 끝나기 전 임시값으로만 사용합니다.
-   */
-  const navigationState =
-    location.state ?? {};
-
-  const effectiveMyMemberId = myMemberId;
+  const navigationState = location.state ?? {}
+  const effectiveMyMemberId = myMemberId
 
   useEffect(() => {
-    if (!entryCode) {
-      return;
-    }
+    if (!entryCode) return
+    fetchRoom(entryCode).catch(() => {})
+  }, [entryCode, fetchRoom])
 
-    fetchRoom(entryCode).catch(() => {
-      // 오류 내용은 gameStore에서 저장합니다.
-    });
-  }, [entryCode, fetchRoom]);
+  const hasServerResult = status === 'FINISHED' && String(room?.entryCode) === String(entryCode)
 
-  const opponentPlayer = useMemo(() => {
-    if (
-      effectiveMyMemberId === null ||
-      effectiveMyMemberId === undefined
-    ) {
-      return null;
-    }
-
-    return (
-      players.find(
-        (player) =>
-          !isSameMember(
-            player.memberId,
-            effectiveMyMemberId,
-          ),
-      ) ?? null
-    );
-  }, [players, effectiveMyMemberId]);
-
-  /*
-   * 현재 Store가 이 방의 FINISHED 정보를 가지고 있는지
-   * 확인합니다.
-   */
-  const hasServerResult =
-    status === "FINISHED" &&
-    String(room?.entryCode) ===
-      String(entryCode);
-
-  /*
-   * 최종 승패는 location.state보다
-   * 서버의 winnerMemberId를 우선합니다.
-   */
   const result = useMemo(() => {
     if (hasServerResult) {
-      if (
-        winnerMemberId === null ||
-        winnerMemberId === undefined
-      ) {
-        return "draw";
+      if (winnerMemberId === null || winnerMemberId === undefined) {
+        return 'draw'
       }
-
-      return isSameMember(
-        winnerMemberId,
-        effectiveMyMemberId,
-      )
-        ? "win"
-        : "lose";
+      return isSameMember(winnerMemberId, effectiveMyMemberId) ? 'win' : 'lose'
     }
-
-    return navigationState.result ?? null;
-  }, [
-    hasServerResult,
-    winnerMemberId,
-    effectiveMyMemberId,
-    navigationState.result,
-  ]);
-
-  const calculatedPlayerMissionCount =
-    countCompletedMissions(
-      missions,
-      effectiveMyMemberId,
-    );
-
-  const calculatedOpponentMissionCount =
-    countCompletedMissions(
-      missions,
-      opponentPlayer?.memberId,
-    );
-
-  /*
-   * 서버에서 missions를 받은 경우 계산값을 사용하고,
-   * 아직 조회 전이라면 navigate state 값을 사용합니다.
-   */
-  const playerMissionCount =
-    missions.length > 0
-      ? calculatedPlayerMissionCount
-      : navigationState.playerMissionCount ??
-        0;
-
-  const opponentMissionCount =
-    missions.length > 0
-      ? calculatedOpponentMissionCount
-      : navigationState.opponentMissionCount ??
-        0;
-
-  const currentResult =
-    RESULT_INFO[result] ??
-    RESULT_INFO.draw;
-
-  const isWin = result === "win";
-  const isLose = result === "lose";
-  const isDraw = result === "draw";
-
-  /*
-   * 기존 방에는 이미 게임 결과가 저장되어 있으므로
-   * 새로운 게임을 하려면 새 방 생성 페이지로 이동합니다.
-   */
+    return navigationState.result ?? null
+  }, [hasServerResult, winnerMemberId, effectiveMyMemberId, navigationState.result])
 
   const handleGoHome = () => {
-    resetRoomState();
-
-    navigate("/lobby", {
-      replace: true,
-    });
-  };
+    resetRoomState()
+    navigate('/rooms', { replace: true })
+  }
 
   if (isRoomLoading && !result) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F5F0FF]">
-        <p className="font-semibold text-[#302842]">
-          게임 결과를 불러오는 중입니다...
-        </p>
-      </main>
-    );
+      <MobileShell bgColor="bg-white">
+        <main className="flex min-h-dvh items-center justify-center">
+          <p className="font-black text-gray-500">결과를 불러오는 중입니다...</p>
+        </main>
+      </MobileShell>
+    )
   }
 
   if (error && !result) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F5F0FF] px-6">
-        <p className="text-center font-semibold text-red-500">
-          {error}
-        </p>
-
-        <button
-          type="button"
-          onClick={handleGoHome}
-          className="rounded-xl bg-[#8B00FF] px-5 py-3 font-bold text-white"
-        >
-          메인으로 돌아가기
-        </button>
-      </main>
-    );
+      <MobileShell bgColor="bg-white">
+        <main className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-6 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+          <p className="text-center font-black text-[#9C3434]">{error}</p>
+          <button type="button" onClick={handleGoHome} className="w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white hover:opacity-90">
+            돌아가기
+          </button>
+        </main>
+      </MobileShell>
+    )
   }
 
   if (!result) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F5F0FF] px-6">
-        <p className="font-semibold text-[#302842]">
-          종료된 게임 결과를 찾을 수 없습니다.
-        </p>
-
-        <button
-          type="button"
-          onClick={handleGoHome}
-          className="rounded-xl bg-[#8B00FF] px-5 py-3 font-bold text-white"
-        >
-          메인으로 돌아가기
-        </button>
-      </main>
-    );
+      <MobileShell bgColor="bg-white">
+        <main className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-6 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+          <p className="font-black text-gray-500">게임 결과를 찾을 수 없습니다.</p>
+          <button type="button" onClick={handleGoHome} className="w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white hover:opacity-90">
+            돌아가기
+          </button>
+        </main>
+      </MobileShell>
+    )
   }
 
-  const finalMessage = isWin
-    ? `내가 ${playerMissionCount}개의 미션을 차지해 승리했습니다.`
-    : isLose
-      ? `상대가 ${opponentMissionCount}개의 미션을 차지해 승리했습니다.`
-      : `나는 ${playerMissionCount}개, 상대는 ${opponentMissionCount}개의 미션을 차지했습니다.`;
+  const currentAssets = RESULT_ASSETS[result] ?? RESULT_ASSETS.draw
 
   return (
-    <MobileShell>
-      <main className="flex min-h-dvh flex-col px-5 pb-8 pt-12">
-      <section className="flex flex-1 flex-col">
-        <div
-          className="text-center"
+    <MobileShell bgColor="bg-white">
+      <main className="flex min-h-[calc(100dvh-4rem)] flex-col items-center px-6 pb-12 pt-[112px] sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+        
+        <div className="mt-24 flex w-full flex-col items-center gap-12">
+          <img src={currentAssets.title} alt={result} className="w-[220px] object-contain" style={{ imageRendering: 'pixelated' }} />
+          <img src={currentAssets.mascot} alt={`${result} mascot`} className="w-[260px] object-contain" style={{ imageRendering: 'pixelated' }} />
+        </div>
+
+        <button 
+          type="button" 
+          onClick={handleGoHome} 
+          className="mt-10 w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white transition-opacity hover:opacity-90"
         >
-          <p className="mb-2 text-xs font-bold tracking-[0.3em] text-[#53608B]">
-            GAME RESULT
-          </p>
-
-          <h1 className="pixel-title text-5xl font-black tracking-tight">
-            {currentResult.title}
-          </h1>
-
-          <p className="mt-3 text-sm font-bold text-[#59627F]">
-            {currentResult.description}
-          </p>
-          <PixelMascot size="lg" className="mx-auto mt-5" />
-        </div>
-
-        <div className="mt-auto">
-          <div className="mb-5 grid grid-cols-2 gap-3">
-            <ResultCard
-              title="나"
-              missionCount={
-                playerMissionCount
-              }
-              status={
-                isDraw
-                  ? "draw"
-                  : isWin
-                    ? "winner"
-                    : "loser"
-              }
-            />
-
-            <ResultCard
-              title="상대"
-              missionCount={
-                opponentMissionCount
-              }
-              status={
-                isDraw
-                  ? "draw"
-                  : isLose
-                    ? "winner"
-                    : "loser"
-              }
-            />
-          </div>
-
-          <div className="pixel-card mb-5 px-5 py-4 text-center">
-            <p className="text-sm font-semibold text-gray-500">
-              최종 결과
-            </p>
-
-            <p className="mt-2 text-lg font-black text-[#171329]">
-              {finalMessage}
-            </p>
-          </div>
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={handleGoHome}
-              className="pixel-button w-full"
-            >
-              메인으로 돌아가기
-            </button>
-          </div>
-        </div>
-      </section>
+          돌아가기
+        </button>
       </main>
     </MobileShell>
-  );
+  )
 }
 
-function ResultCard({
-  title,
-  missionCount,
-  status,
-}) {
-  const isWinner =
-    status === "winner";
-
-  const isDraw =
-    status === "draw";
-
-  return (
-    <article
-      className={`relative rounded-2xl border-2 p-4 ${
-        isWinner
-          ? "border-[#8B00FF] bg-purple-50"
-          : isDraw
-            ? "border-gray-400 bg-gray-50"
-            : "border-gray-100 bg-gray-50"
-      }`}
-    >
-      {isWinner && (
-        <span className="absolute right-4 top-4 rounded-full bg-[#8B00FF] px-3 py-1 text-xs font-bold text-white">
-          WINNER
-        </span>
-      )}
-
-      {isDraw && (
-        <span className="absolute right-4 top-4 rounded-full bg-gray-500 px-3 py-1 text-xs font-bold text-white">
-          DRAW
-        </span>
-      )}
-
-      <p className="text-sm font-bold text-gray-400">
-        PLAYER
-      </p>
-
-      <h2 className="mt-1 text-2xl font-black text-[#171329]">
-        {title}
-      </h2>
-
-      <div className="mt-6">
-        <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-4 shadow-sm">
-          <span className="text-sm font-semibold text-gray-500">
-            차지한 미션
-          </span>
-
-          <strong className="text-xl font-black text-[#171329]">
-            {missionCount}개
-          </strong>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-export default ResultPage;
+export default ResultPage

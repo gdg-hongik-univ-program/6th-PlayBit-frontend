@@ -4,14 +4,17 @@ import { getRooms } from '../api/roomApi'
 import MobileShell from '../components/MobileShell'
 import PageHeader from '../components/PageHeader'
 import useGameStore from '../features/game/model/gameStore'
-import { leaveRoom } from '../services/playerService'
+
+import homeBg from '../assets/home-bg.jpg'
+import enterRoomImg from '../assets/enterRoom.png'
+import chevronRightImg from '../assets/chevron-right.png'
+import plusButtonImg from '../assets/plus-button.png'
 
 function RoomListPage() {
   const navigate = useNavigate()
   const fetchRoom = useGameStore((state) => state.fetchRoom)
   const [rooms, setRooms] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [leavingEntryCode, setLeavingEntryCode] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -63,138 +66,104 @@ function RoomListPage() {
     }
   }
 
-  const handleLeaveRoom = async (
-    event,
-    entryCode,
-  ) => {
-    event.stopPropagation()
-
-    try {
-      setLeavingEntryCode(entryCode)
-      setError('')
-      await leaveRoom(entryCode)
-      setRooms((currentRooms) =>
-        currentRooms.filter(
-          (roomInfo) =>
-            roomInfo.entryCode !== entryCode,
-        ),
-      )
-    } catch (leaveError) {
-      console.error('방 퇴장 실패:', leaveError)
-      setError(
-        leaveError.message ||
-          '방에서 나가지 못했습니다.',
-      )
-    } finally {
-      setLeavingEntryCode(null)
-    }
-  }
-
   return (
-    <MobileShell>
-      <PageHeader
-        title="방 목록"
-        onBack={() => navigate('/lobby')}
-        action={
-          <button
-            type="button"
-            onClick={() => navigate('/join-room')}
-            className="rounded-full bg-[#6E82D7] px-3 py-2 text-[10px] font-black text-white"
-          >
-            입장
-          </button>
-        }
-      />
-
-      <main className="px-5 pb-8 pt-4">
-        <p className="mb-5 text-xs font-bold text-[#4E587B]">
-          참여한 게임방
-        </p>
-
-        {error && (
-          <p className="mb-4 rounded-xl bg-[#535F8B] px-4 py-3 text-xs font-bold text-white">
-            ⚠ {error}
-          </p>
-        )}
-
-        {isLoading ? (
-          <div className="pixel-card p-8 text-center text-xs font-black">
-            방 목록을 불러오는 중...
-          </div>
-        ) : rooms.length > 0 ? (
-          <div className="space-y-3">
-            {rooms.map((roomInfo) => (
-              <article
-                key={roomInfo.entryCode}
-                className="pixel-card flex items-center gap-3 p-4"
+    <MobileShell bgColor="bg-transparent">
+      <div 
+        className="relative flex min-h-dvh flex-col sm:h-full sm:min-h-0"
+        style={{ backgroundImage: `url(${homeBg})`, backgroundSize: 'cover', backgroundPosition: 'center', imageRendering: 'pixelated' }}
+      >
+        <div className="absolute inset-0 bg-white/75"></div>
+        
+        <div className="relative z-10 flex h-full flex-col">
+          <PageHeader
+            title="방 목록"
+            onBack={() => navigate('/lobby')}
+            action={
+              <button
+                type="button"
+                onClick={() => navigate('/join-room')}
+                className="flex h-[34px] items-center justify-center hover:opacity-80 transition-opacity"
               >
-                <button
-                  type="button"
-                  onClick={() => handleOpenRoom(roomInfo)}
-                  className="min-w-0 flex-1 text-left"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-black">
-                      {roomInfo.roomName || '이름 없는 방'}
-                    </p>
-                    <span className="rounded-full bg-[#E8ECFF] px-2 py-1 text-[9px] font-black text-[#5264AD]">
-                      {roomInfo.roomStatus}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-[#69718C]">
-                    입장 코드 · {roomInfo.entryCode}
-                  </p>
-                </button>
+                <img src={enterRoomImg} alt="방 입장" className="h-full object-contain" />
+              </button>
+            }
+          />
 
-                <button
-                  type="button"
-                  onClick={(event) =>
-                    handleLeaveRoom(
-                      event,
-                      roomInfo.entryCode,
-                    )
-                  }
-                  disabled={
-                    leavingEntryCode === roomInfo.entryCode
-                  }
-                  className="rounded-lg px-2 py-2 text-[10px] font-black text-[#A14A4A] disabled:opacity-40"
-                >
-                  {leavingEntryCode === roomInfo.entryCode
-                    ? '처리 중'
-                    : '나가기'}
-                </button>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="pixel-card p-8 text-center">
-            <p className="text-3xl">☁</p>
-            <p className="mt-3 text-sm font-black">
-              아직 참여한 방이 없어요
-            </p>
-            <p className="mt-2 text-xs text-[#707998]">
-              새 방을 만들거나 코드를 입력해보세요.
-            </p>
-          </div>
-        )}
+          <main className="flex-1 px-5 pb-8 pt-4 overflow-y-auto">
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/rooms/create')}
-            className="pixel-button"
-          >
-            ＋ 새 방 만들기
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/join-room')}
-            className="pixel-card min-h-12 text-sm font-black"
-          >
-            코드로 입장
-          </button>
+            {error && (
+              <p className="mb-4 rounded-xl bg-[#535F8B] px-4 py-3 text-xs font-bold text-white shadow-md">
+                ⚠ {error}
+              </p>
+            )}
+
+            {isLoading ? (
+              <div className="rounded-3xl bg-[#96E4D6] p-8 text-center text-xs font-black shadow-sm">
+                방 목록을 불러오는 중...
+              </div>
+            ) : rooms.length > 0 ? (
+              <div className="space-y-4">
+                {rooms.map((roomInfo) => (
+                  <article
+                    key={roomInfo.entryCode}
+                    className="flex flex-col gap-4 rounded-[20px] bg-[#96E4D6] p-5 cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
+                    onClick={() => handleOpenRoom(roomInfo)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="truncate text-[13px] font-black">
+                        {roomInfo.roomName || '이름 없는 방'}
+                      </p>
+                      <span className="text-[11px] font-black">
+                        {roomInfo.roomStatus}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-end justify-between">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigator.clipboard.writeText(roomInfo.entryCode)
+                        }}
+                        className="text-[13px] font-black hover:opacity-70 transition-opacity active:scale-95"
+                        title="클릭하여 복사"
+                      >
+                        {roomInfo.entryCode}
+                      </button>
+                      <div className="flex h-5 w-5 items-center justify-center">
+                        <img src={chevronRightImg} alt="입장" className="h-full w-full object-contain" />
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[20px] bg-[#96E4D6] p-8 text-center shadow-sm">
+                <p className="text-3xl">☁</p>
+                <p className="mt-3 text-sm font-black">
+                  아직 참여한 방이 없어요
+                </p>
+                <p className="mt-2 text-xs opacity-70">
+                  새 방을 만들거나 코드를 입력해보세요.
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 flex w-full">
+              <button
+                type="button"
+                onClick={() => navigate('/rooms/create')}
+                className="flex w-full flex-col items-center justify-center gap-2 rounded-[20px] border-[3px] border-dashed border-[#53608B] bg-[#96E4D6] py-5 shadow-sm hover:opacity-90 transition-opacity"
+              >
+                <div className="flex h-10 w-10 items-center justify-center">
+                  <img src={plusButtonImg} alt="새 방 만들기 아이콘" className="h-full w-full object-contain" />
+                </div>
+                <span className="text-sm font-black text-[#53608B]">새 방 만들기</span>
+              </button>
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
     </MobileShell>
   )
 }
