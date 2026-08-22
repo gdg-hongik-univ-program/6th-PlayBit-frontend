@@ -23,11 +23,35 @@ export const normalizeRoomResponse = (
     previousState.players ??
     []
 
-  const missions =
+  const responseMissions =
     data.missions ??
     roomData.missions ??
     previousState.missions ??
     []
+
+  /*
+   * 방 조회/SSE의 MissionItem에는 인증 사진 필드가 생략될 수 있습니다.
+   * 완료/사보타주 응답으로 받은 상세 인증 정보는 같은 position의
+   * 최신 미션에 합쳐서 화면 전환 이후에도 유지합니다.
+   */
+  const previousMissions =
+    previousState.missions ?? []
+
+  const missions = responseMissions.map(
+    (mission) => {
+      const previousMission =
+        previousMissions.find(
+          (item) =>
+            String(item.position) ===
+            String(mission.position),
+        )
+
+      return {
+        ...previousMission,
+        ...mission,
+      }
+    },
+  )
 
   const hasTopLevelMyMemberId = hasOwn(
     data,
@@ -106,6 +130,10 @@ export const normalizeRoomResponse = (
       category:
         roomData.category ??
         previousRoom?.category ??
+        null,
+      roomName:
+        roomData.roomName ??
+        previousRoom?.roomName ??
         null,
     },
 
