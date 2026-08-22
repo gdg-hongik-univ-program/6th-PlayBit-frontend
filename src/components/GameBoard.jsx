@@ -1,34 +1,20 @@
 import BoardCell from './BoardCell'
 
-function GameBoard({
-  entryCode,
-  missions,
-  players,
-  disabled = false,
-}) {
+const BOARD_SIZE = 9
+
+function GameBoard({ entryCode, missions, players, disabled = false }) {
   const sortedMissions = [...missions].sort(
-    (a, b) => Number(a.position) - Number(b.position),
+    (a, b) =>
+      Number(a.position) - Number(b.position),
+  )
+  const emptyCellCount = Math.max(
+    0,
+    BOARD_SIZE - sortedMissions.length,
   )
 
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-sm">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-bold text-[#302842]">
-            미션 보드
-          </h2>
-
-          <p className="mt-1 text-xs text-[#8175A5]">
-            빈 칸을 선택해 미션을 완료하세요.
-          </p>
-        </div>
-
-        <span className="rounded-full bg-[#EEE8FF] px-3 py-1 text-xs font-semibold text-[#8B00F5]">
-          3 × 3
-        </span>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
+    <section className="rounded-[24px] border-4 border-white/80 bg-[#DDE7C3] p-3 shadow-[0_7px_0_rgba(58,72,111,0.22)]">
+      <div className="grid grid-cols-3 gap-2">
         {sortedMissions.map((mission) => (
           <BoardCell
             key={mission.position}
@@ -38,6 +24,17 @@ function GameBoard({
             disabled={disabled}
           />
         ))}
+
+        {Array.from(
+          { length: emptyCellCount },
+          (_, index) => (
+            <div
+              key={`empty-${index}`}
+              className="aspect-square rounded-xl border-2 border-white/80 bg-[#F7F8FF]/85 shadow-[0_3px_0_rgba(57,68,113,0.2)]"
+              aria-label="미션 준비 중"
+            />
+          ),
+        )}
       </div>
     </section>
   )

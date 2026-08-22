@@ -7,3 +7,9 @@ export const updateNickname = async (nickname) => {
 
   return response.data
 }
+
+export const getMemberStats = async () => {
+  const response = await axiosInstance.get('/api/members/stats')
+
+  return response.data
+}

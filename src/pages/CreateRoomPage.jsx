@@ -1,276 +1,69 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import RoomCodeCard from '../components/RoomCodeCard'
-import CategoryOption from '../components/CategoryOption'
+import MobileShell from '../components/MobileShell'
+import PageHeader from '../components/PageHeader'
 import useGameStore from '../features/game/model/gameStore'
 
 const categories = [
-  {
-    id: 1,
-    apiValue: 'STUDY',
-    icon: '📚',
-    title: '공부',
-    description: '교재 1챕터 읽기 · 플래시카드 외우기 · 노트 정리하기',
-  },
-  {
-    id: 2,
-    apiValue: 'WORKOUT',
-    icon: '💪',
-    title: '운동',
-    description: '팔굽혀펴기 20개 · 30분 달리기 · 10분 스트레칭',
-  },
-  {
-    id: 3,
-    apiValue: 'HEALTH',
-    icon: '🌿',
-    title: '건강',
-    description: '명상 10분 · 균형 잡힌 식사 · 일찍 잠들기',
-  },
-  {
-    id: 4,
-    apiValue: 'HOBBY',
-    icon: '🎨',
-    title: '취미',
-    description: '새 곡 연습하기 · 책 읽기 · 요리하기',
-  },
-  {
-    id: 5,
-    apiValue: 'LIFE',
-    icon: '🏠',
-    title: '일상생활',
-    description: '방 정리하기 · 이메일 정리 · 하루 계획 세우기',
-  },
+  { apiValue: 'STUDY', icon: '📚', title: '공부' },
+  { apiValue: 'WORKOUT', icon: '💪', title: '운동' },
+  { apiValue: 'HEALTH', icon: '🌿', title: '건강' },
+  { apiValue: 'HOBBY', icon: '🎨', title: '취미' },
+  { apiValue: 'LIFE', icon: '🏠', title: '일상생활' },
 ]
 
 function CreateRoomPage() {
   const navigate = useNavigate()
-  const hasCreatedRoom = useRef(false)
-
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [roomName, setRoomName] = useState('')
   const [isStarting, setIsStarting] = useState(false)
+  const createNewRoom = useGameStore((state) => state.createNewRoom)
+  const enterRoom = useGameStore((state) => state.enterRoom)
+  const fetchRoom = useGameStore((state) => state.fetchRoom)
+  const isRoomLoading = useGameStore((state) => state.isRoomLoading)
+  const error = useGameStore((state) => state.error)
+  const isProcessing = isRoomLoading || isStarting
 
-  const room = useGameStore((state) => state.room)
-
-  const createNewRoom = useGameStore(
-    (state) => state.createNewRoom,
-  )
-
-  const selectCategory = useGameStore(
-    (state) => state.selectCategory,
-  )
-
-  const enterRoom = useGameStore(
-    (state) => state.enterRoom,
-  )
-
-  const fetchRoom = useGameStore(
-    (state) => state.fetchRoom,
-  )
-
-  const isRoomLoading = useGameStore(
-    (state) => state.isRoomLoading,
-  )
-
-  const error = useGameStore(
-    (state) => state.error,
-  )
-
-  const isProcessing =
-    isRoomLoading || isStarting
-
-  useEffect(() => {
-    const createRoomOnPageEnter = async () => {
-      if (hasCreatedRoom.current) {
-        return
-      }
-
-      hasCreatedRoom.current = true
-
-      try {
-        await createNewRoom()
-      } catch (createRoomError) {
-        console.error(
-          '방 생성 요청 실패:',
-          createRoomError,
-        )
-      }
-    }
-
-    createRoomOnPageEnter()
-  }, [createNewRoom])
-
-  const handleCategorySelect = (
-    category,
-  ) => {
-    if (isProcessing) {
-      return
-    }
-
-    setSelectedCategory(category)
-  }
-
-  const handleStartGame = async () => {
-    if (
-      !selectedCategory ||
-      !room?.entryCode ||
-      isProcessing
-    ) {
-      return
-    }
-
-    const entryCode = room.entryCode
-
+  const handleCreate = async () => {
+    if (!selectedCategory || !roomName.trim() || isProcessing) return
     try {
       setIsStarting(true)
-
-      /*
-       * 1. 방 카테고리 설정
-       * PATCH /api/rooms/{entryCode}/category
-       */
-      await selectCategory(
-        entryCode,
-        selectedCategory.apiValue,
-      )
-
-      /*
-       * 2. 방 생성자를 플레이어로 등록
-       * POST /api/rooms/{entryCode}/players
-       */
-      await enterRoom(entryCode)
-
-      /*
-       * 3. 등록된 플레이어, 미션, 턴 정보 조회
-       * GET /api/rooms/{entryCode}
-       */
-      await fetchRoom(entryCode)
-
-      /*
-       * 4. 모든 요청이 성공한 후 게임보드 이동
-       */
-      navigate(
-        `/rooms/${entryCode}/game`,
-      )
-    } catch (startGameError) {
-      console.error(
-        '게임 시작 준비 실패:',
-        startGameError.response?.status,
-        startGameError.response?.data,
-        startGameError,
-      )
+      const roomData = await createNewRoom({
+        category: selectedCategory.apiValue,
+        roomName: roomName.trim(),
+      })
+      await enterRoom(roomData.entryCode)
+      await fetchRoom(roomData.entryCode)
+      navigate(`/rooms/${roomData.entryCode}/game`)
+    } catch (createError) {
+      console.error('게임 시작 준비 실패:', createError)
     } finally {
       setIsStarting(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F4FF]">
-      <header className="flex h-16 items-center justify-between bg-white px-8">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="text-xl font-extrabold"
-        >
-          <span className="text-[#8B00F5]">
-            Play
-          </span>
-
-          <span className="text-[#211A35]">
-            Bit
-          </span>
-        </button>
-
-        <p className="text-sm font-medium text-[#74698E]">
-          방 만들기
-        </p>
-
-        <div className="w-[62px]" />
-      </header>
-
-      <main className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-10 px-6 py-14 md:grid-cols-[320px_1fr]">
-        <div className="flex flex-col gap-4">
-          <RoomCodeCard
-            roomCode={
-              room?.entryCode ?? '------'
-            }
-          />
-
-          <section className="rounded-xl border border-[#FFD98A] bg-[#FFF9E8] px-5 py-4">
-            <p className="text-xs leading-5 text-[#E18424]">
-              ⚠️ 방 코드를 저장하세요.
-              두 플레이어 모두 이 코드로
-              게임에 입장해야 합니다.
-            </p>
-          </section>
-
-          <button
-            type="button"
-            disabled={
-              !selectedCategory ||
-              isProcessing ||
-              !room?.entryCode
-            }
-            onClick={handleStartGame}
-            className={`h-12 rounded-xl text-sm font-semibold transition ${
-              selectedCategory &&
-              room?.entryCode &&
-              !isProcessing
-                ? 'bg-[#8B00F5] text-white hover:bg-[#7700D4]'
-                : 'cursor-not-allowed bg-[#EEE8FF] text-[#9A8EBB]'
-            }`}
-          >
-            {isProcessing
-              ? '게임방 준비 중...'
-              : selectedCategory
-                ? `${selectedCategory.title} 카테고리로 시작하기`
-                : '카테고리를 선택해주세요'}
-          </button>
-
-          {error && (
-            <p className="text-sm text-red-500">
-              {error}
-            </p>
-          )}
-        </div>
-
+    <MobileShell>
+      <PageHeader title="방 만들기" onBack={() => navigate('/rooms')} />
+      <main className="flex min-h-[calc(100dvh-4rem)] flex-col px-5 pb-8 pt-4">
         <section>
-          <div className="mb-4 flex items-center gap-2">
-            <h2 className="text-sm font-bold text-[#302842]">
-              카테고리 선택
-            </h2>
-
-            <span className="rounded-full bg-[#EEE8FF] px-2 py-1 text-[10px] text-[#8B00F5]">
-              {selectedCategory
-                ? '1개 선택'
-                : '0개 선택'}
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {categories.map(
-              (category) => (
-                <CategoryOption
-                  key={category.id}
-                  icon={category.icon}
-                  title={category.title}
-                  description={
-                    category.description
-                  }
-                  isSelected={
-                    selectedCategory?.id ===
-                    category.id
-                  }
-                  onClick={() =>
-                    handleCategorySelect(
-                      category,
-                    )
-                  }
-                />
-              ),
-            )}
+          <div className="flex items-center justify-between"><h2 className="text-xs font-black">카테고리 선택</h2><span className="text-[9px] text-[#687292]">선택해주세요</span></div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {categories.map((category) => (
+              <button key={category.apiValue} type="button" onClick={() => setSelectedCategory(category)} className={`pixel-card flex min-h-20 flex-col items-center justify-center gap-2 p-3 text-xs font-black ${selectedCategory?.apiValue === category.apiValue ? '!border-[#4559AE] !bg-[#E8ECFF]' : ''}`}><span className="text-2xl">{category.icon}</span>{category.title}</button>
+            ))}
           </div>
         </section>
+        <section className="mt-8">
+          <label htmlFor="roomName" className="text-xs font-black">방 이름을 입력하세요</label>
+          <input id="roomName" value={roomName} onChange={(event) => setRoomName(event.target.value.slice(0, 20))} className="pixel-input mt-3" placeholder="바나나 치" />
+          <div className="mt-3 flex items-center justify-between rounded-xl bg-[#535F8B] px-4 py-3 text-[10px] font-bold text-white"><span>⚠ 이미 사용중인 방 이름이면 다시 시도해주세요.</span></div>
+        </section>
+        <section className="pixel-card mt-6 px-4 py-3"><p className="text-[10px] font-bold text-[#707996]">방을 생성하면 친구에게 공유할 6자리 입장 코드가 자동으로 발급됩니다.</p></section>
+        {error && <p className="mt-4 text-xs font-bold text-[#9C3434]">{error}</p>}
+        <button type="button" onClick={handleCreate} disabled={!selectedCategory || !roomName.trim() || isProcessing} className="pixel-button mt-auto w-full">{isProcessing ? '방 준비 중...' : '방 생성하기'}</button>
       </main>
-    </div>
+    </MobileShell>
   )
 }
 

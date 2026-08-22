@@ -10,16 +10,37 @@ const refreshRoom = async (
   entryCode,
   set,
   get,
+  missionResult,
 ) => {
-  const roomData = await getRoom(entryCode)
+  const roomData =
+    missionResult?.room ??
+    (await getRoom(entryCode))
 
-  set(
+  const normalizedRoom =
     normalizeRoomResponse(
       roomData,
       get(),
       entryCode,
-    ),
-  )
+    )
+
+  const detailedMission =
+    missionResult?.mission
+
+  if (detailedMission) {
+    normalizedRoom.missions =
+      normalizedRoom.missions.map(
+        (mission) =>
+          String(mission.position) ===
+          String(detailedMission.position)
+            ? {
+                ...mission,
+                ...detailedMission,
+              }
+            : mission,
+      )
+  }
+
+  set(normalizedRoom)
 
   return roomData
 }
@@ -37,7 +58,8 @@ export const createMissionSlice = (set, get) => ({
         error: null,
       })
 
-      await completeMissionApi(
+      const missionResult =
+        await completeMissionApi(
         entryCode,
         position,
         image,
@@ -48,6 +70,7 @@ export const createMissionSlice = (set, get) => ({
         entryCode,
         set,
         get,
+        missionResult,
       )
     } catch (error) {
       console.error(
@@ -82,7 +105,8 @@ export const createMissionSlice = (set, get) => ({
         error: null,
       })
 
-      await sabotageMissionApi(
+      const missionResult =
+        await sabotageMissionApi(
         entryCode,
         position,
         image,
@@ -93,6 +117,7 @@ export const createMissionSlice = (set, get) => ({
         entryCode,
         set,
         get,
+        missionResult,
       )
     } catch (error) {
       console.error(

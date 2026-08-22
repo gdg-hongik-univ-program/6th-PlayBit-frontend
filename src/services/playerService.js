@@ -1,4 +1,7 @@
-import { registerPlayerApi } from '../api/playerApi'
+import {
+  leaveRoomApi,
+  registerPlayerApi,
+} from '../api/playerApi'
 
 export const registerPlayer = async (entryCode) => {
   const response = await registerPlayerApi(entryCode)
@@ -19,4 +22,17 @@ export const registerPlayer = async (entryCode) => {
     memberId: player.memberId,
     role,
   }
+}
+
+export const leaveRoom = async (entryCode) => {
+  const response = await leaveRoomApi(entryCode)
+
+  if (!response.success) {
+    throw new Error(
+      response.error?.message ||
+        '방 퇴장에 실패했습니다.',
+    )
+  }
+
+  return response.data
 }

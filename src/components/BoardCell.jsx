@@ -1,5 +1,7 @@
-import useGameStore from '../features/game/model/gameStore'
 import { useState } from 'react'
+import useGameStore from '../features/game/model/gameStore'
+import MissionDetailModal from './MissionDetailModal'
+import MissionEvidence from './MissionEvidence'
 import MissionPhoto from './MissionPhoto'
 
 function BoardCell({
@@ -8,128 +10,38 @@ function BoardCell({
   players,
   disabled = false,
 }) {
-  const completeMission = useGameStore(
-    (state) => state.completeMission,
-  )
+  const completeMission = useGameStore((state) => state.completeMission)
+  const sabotageMission = useGameStore((state) => state.sabotageMission)
+  const myMemberId = useGameStore((state) => state.myMemberId)
+  const currentTurnMemberId = useGameStore((state) => state.currentTurnMemberId)
+  const currentTurnSabotaged = useGameStore((state) => state.currentTurnSabotaged)
+  const status = useGameStore((state) => state.status)
+  const isMissionSubmitting = useGameStore((state) => state.isMissionSubmitting)
+  const [activeModal, setActiveModal] = useState(null)
+  const [photoMode, setPhotoMode] = useState(null)
 
-  const sabotageMission = useGameStore(
-    (state) => state.sabotageMission,
-  )
-
-  const myMemberId = useGameStore(
-    (state) => state.myMemberId,
-  )
-
-  const currentTurnMemberId = useGameStore(
-    (state) => state.currentTurnMemberId,
-  )
-
-  const currentTurnSabotaged = useGameStore(
-    (state) => state.currentTurnSabotaged,
-  )
-
-  const status = useGameStore(
-    (state) => state.status,
-  )
-
-  const isMissionSubmitting = useGameStore(
-    (state) => state.isMissionSubmitting,
-  )
-
-  const [isPhotoOpen, setIsPhotoOpen] =
-    useState(false)
-    
-  const [photoMode, setPhotoMode] =
-    useState(null)
-
-  const completedByMemberId =
-    mission.completedByMemberId
-
-  const isCompleted =
-    completedByMemberId !== null &&
-    completedByMemberId !== undefined
-
+  const completedByMemberId = mission.completedByMemberId
+  const isCompleted = completedByMemberId !== null && completedByMemberId !== undefined
   const completedPlayer = players.find(
-    (player) =>
-      String(player.memberId) ===
-      String(completedByMemberId),
+    (player) => String(player.memberId) === String(completedByMemberId),
   )
-
   const mark = completedPlayer?.role ?? null
-
-  /*
-   * 현재 사용자가 완료한 칸인지 확인
-   */
-  const isMyCompletedCell =
-    isCompleted &&
-    myMemberId !== null &&
-    myMemberId !== undefined &&
-    String(completedByMemberId) ===
-      String(myMemberId)
-
-  /*
-   * 상대방이 완료한 칸인지 확인
-   */
   const isOpponentCompletedCell =
     isCompleted &&
     myMemberId !== null &&
     myMemberId !== undefined &&
-    String(completedByMemberId) !==
-      String(myMemberId)
-
-  /*
-   * 현재 내 턴인지 확인
-   */
+    String(completedByMemberId) !== String(myMemberId)
   const isMyTurn =
     myMemberId !== null &&
     myMemberId !== undefined &&
     currentTurnMemberId !== null &&
     currentTurnMemberId !== undefined &&
-    String(currentTurnMemberId) ===
-      String(myMemberId)
-
-  /*
-   * 백엔드 명세의 필드명은
-   * sabotagedByOpponent입니다.
-   *
-   * 기존 sabotaged 필드도 임시 호환합니다.
-   */
+    String(currentTurnMemberId) === String(myMemberId)
   const isAlreadySabotaged =
-    mission.sabotagedByOpponent ??
-    mission.sabotaged ??
-    false
-
-  /*
-   * 게임 진행 중이 아니거나
-   * API 요청 중이면 모든 상호작용을 막습니다.
-   */
+    mission.sabotagedByOpponent ?? mission.sabotaged ?? false
   const isInteractionDisabled =
-    disabled ||
-    isMissionSubmitting ||
-    status !== 'PLAYING'
-
-  /*
-   * 미션 완료 조건
-   *
-   * 1. 게임 진행 중
-   * 2. 내 턴
-   * 3. 아직 완료되지 않은 빈칸
-   */
-  const canComplete =
-    !isInteractionDisabled &&
-    isMyTurn &&
-    !isCompleted
-
-  /*
-   * 사보타주 조건
-   *
-   * 1. 게임 진행 중
-   * 2. 현재 턴이 존재함
-   * 3. 상대방 턴
-   * 4. 상대방이 완료한 칸
-   * 5. 아직 사보타주되지 않은 칸
-   * 6. 이번 턴에 사보타주를 사용하지 않음
-   */
+    disabled || isMissionSubmitting || status !== 'PLAYING'
+  const canComplete = !isInteractionDisabled && isMyTurn && !isCompleted
   const canSabotage =
     !isInteractionDisabled &&
     currentTurnMemberId !== null &&
@@ -139,139 +51,90 @@ function BoardCell({
     !isAlreadySabotaged &&
     !currentTurnSabotaged
 
-  const onComplete = () => {
-    if (!canComplete) {
-      return
-    }
-
-    setPhotoMode('complete')
-    setIsPhotoOpen(true)
+  const openPhoto = (mode) => {
+    setPhotoMode(mode)
+    setActiveModal('photo')
   }
 
-  const onSabotage = () => {
-    if (!canSabotage) {
-      return
-    }
-
-    setPhotoMode('sabotage')
-    setIsPhotoOpen(true)
+  const closePhoto = () => {
+    setPhotoMode(null)
+    setActiveModal(null)
   }
 
-  const handlePhotoComplete = async ({
-    photoFile,
-    comment,
-  }) => {
-    try {
-      if (photoMode === 'complete') {
-        await completeMission(
-          entryCode,
-          mission.position,
-          photoFile,
-          comment,
-        )
-      }
-
-      if (photoMode === 'sabotage') {
-        await sabotageMission(
-          entryCode,
-          mission.position,
-          photoFile,
-          comment,
-        )
-      }
-
-      setIsPhotoOpen(false)
-      setPhotoMode(null)
-    } catch (error) {
-      console.error(
-        '사진 인증 요청 실패:',
-        error,
-      )
-
-      throw error
+  const handlePhotoComplete = async ({ photoFile, comment }) => {
+    if (photoMode === 'complete') {
+      await completeMission(entryCode, mission.position, photoFile, comment)
     }
+
+    if (photoMode === 'sabotage') {
+      await sabotageMission(entryCode, mission.position, photoFile, comment)
+    }
+
+    closePhoto()
   }
 
   return (
-      <>
-        <article
-          className={`flex min-h-[150px] flex-col justify-between rounded-2xl border p-4 transition ${
-            isCompleted
-              ? 'border-[#D8C8FF] bg-[#F7F4FF]'
-              : 'border-[#E6DEF8] bg-white hover:border-[#8B00F5]'
-          }`}
-        >
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EEE8FF] text-xs font-black text-[#8B00F5]">
-                {mission.position + 1}
-              </span>
-        
-              {mark && (
-                <span className="text-2xl font-black text-[#8B00F5]">
-                  {mark}
-                </span>
-              )}
-            </div>
-            
-            <p className="break-keep text-sm font-semibold leading-5 text-[#302842]">
-              {mission.content}
-            </p>
-          </div>
-            
-          <div className="mt-4 flex flex-col gap-2">
-            {isMyCompletedCell && (
-              <span className="rounded-full bg-[#EEE8FF] px-2 py-1 text-center text-xs font-semibold text-[#8B00F5]">
-                내가 완료
-              </span>
-            )}
-  
-            {isAlreadySabotaged && (
-              <span className="rounded-full bg-[#FFF1F1] px-2 py-1 text-center text-xs font-semibold text-[#E05252]">
-                사보타주 사용됨
-              </span>
-            )}
-  
-            {canComplete && (
-              <button
-                type="button"
-                onClick={onComplete}
-                disabled={isMissionSubmitting}
-                className="h-9 rounded-xl bg-[#8B00F5] text-xs font-bold text-white transition hover:bg-[#7700D4] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isMissionSubmitting
-                  ? '처리 중...'
-                  : '미션 완료'}
-              </button>
-            )}
-  
-            {canSabotage && (
-              <button
-                type="button"
-                onClick={onSabotage}
-                disabled={isMissionSubmitting}
-                className="h-9 rounded-xl bg-[#211A35] text-xs font-bold text-white transition hover:bg-[#33284F] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isMissionSubmitting
-                  ? '처리 중...'
-                  : '사보타주 -6시간'}
-              </button>
-            )}
-          </div>
-        </article>
-          
-        {/* 사진 + 코멘트 인증창 */}
-        <MissionPhoto
+    <>
+      <button
+        type="button"
+        onClick={() => setActiveModal('detail')}
+        className={`relative aspect-square rounded-xl border-2 p-2 text-center shadow-[0_3px_0_rgba(57,68,113,0.2)] ${
+          isCompleted
+            ? 'border-[#5163B4] bg-white'
+            : 'border-white/80 bg-[#F7F8FF]/85'
+        }`}
+        aria-label={`미션 ${Number(mission.position) + 1}: ${mission.content}`}
+      >
+        <span className="absolute left-2 top-1 text-[9px] font-black text-[#717A98]">
+          {Number(mission.position) + 1}
+        </span>
+        {mark ? (
+          <strong
+            className={`pixel-title text-4xl ${
+              mark === 'O' ? 'text-[#D96255]' : 'text-[#6879CE]'
+            }`}
+          >
+            {mark}
+          </strong>
+        ) : (
+          <span className="line-clamp-3 text-[9px] font-black leading-3 text-[#59617E]">
+            {mission.content}
+          </span>
+        )}
+        {isAlreadySabotaged && (
+          <span className="absolute bottom-1 right-1 text-xs">⚡</span>
+        )}
+      </button>
+
+      {activeModal === 'detail' && (
+        <MissionDetailModal
           mission={mission}
-          isOpen={isPhotoOpen}
-          onClose={() => {
-            setIsPhotoOpen(false)
-            setPhotoMode(null)
-          }}
-          onComplete={handlePhotoComplete}
+          isCompleted={isCompleted}
+          canComplete={canComplete}
+          canSabotage={canSabotage}
+          isMyTurn={isMyTurn}
+          onComplete={() => openPhoto('complete')}
+          onSabotage={() => openPhoto('sabotage')}
+          onViewEvidence={() => setActiveModal('evidence')}
+          onClose={() => setActiveModal(null)}
         />
-      </>
-    )
-  }
+      )}
+
+      <MissionPhoto
+        mission={mission}
+        mode={photoMode}
+        isOpen={activeModal === 'photo'}
+        onClose={closePhoto}
+        onComplete={handlePhotoComplete}
+      />
+
+      <MissionEvidence
+        mission={mission}
+        isOpen={activeModal === 'evidence'}
+        onClose={() => setActiveModal(null)}
+      />
+    </>
+  )
+}
 
 export default BoardCell

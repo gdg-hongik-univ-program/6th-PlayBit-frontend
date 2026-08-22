@@ -28,16 +28,7 @@ const unwrapResponse = (response) => {
  *
  * POST /api/rooms
  *
- * 반환값:
- * {
- *   entryCode: 'ED6137',
- *   categories: [
- *     {
- *       code: 'STUDY',
- *       name: '공부'
- *     }
- *   ]
- * }
+ * 빈 방을 생성하고 입장 코드와 카테고리 목록을 반환합니다.
  */
 export const createRoom = async () => {
   const response = await axiosInstance.post('/api/rooms')
@@ -46,21 +37,13 @@ export const createRoom = async () => {
 }
 
 /**
- * 방 카테고리 설정
+ * 방 카테고리와 이름 설정
  *
  * PATCH /api/rooms/{entryCode}/category
- *
- * 요청 바디:
- * {
- *   category: 'STUDY'
- * }
- *
- * 반환값:
- * {}
  */
-export const updateRoomCategory = async (
+export const setRoom = async (
   entryCode,
-  category,
+  { category, roomName },
 ) => {
   const normalizedEntryCode =
     validateEntryCode(entryCode)
@@ -69,14 +52,30 @@ export const updateRoomCategory = async (
     throw new Error('카테고리를 선택해야 합니다.')
   }
 
+  if (!roomName || typeof roomName !== 'string') {
+    throw new Error('방 이름을 입력해야 합니다.')
+  }
+
   const response = await axiosInstance.patch(
     `/api/rooms/${encodeURIComponent(
       normalizedEntryCode,
     )}/category`,
     {
       category: category.trim(),
+      roomName: roomName.trim(),
     },
   )
+
+  return unwrapResponse(response)
+}
+
+/**
+ * 로그인 사용자가 참여한 방 목록 조회
+ *
+ * GET /api/rooms
+ */
+export const getRooms = async () => {
+  const response = await axiosInstance.get('/api/rooms')
 
   return unwrapResponse(response)
 }
