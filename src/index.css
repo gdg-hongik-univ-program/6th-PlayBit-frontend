@@ -1,4 +1,13 @@
+@import url('/fonts/Galmuri/galmuri.css');
 @import "tailwindcss";
+
+:root {
+  font-family: "Galmuri11", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  color: #151927;
+  background: #171717;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
 
 * {
   box-sizing: border-box;
@@ -6,5 +15,127 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-width: 320px;
+  min-height: 100dvh;
+  background: #171717;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+.mobile-shell-frame {
+  min-height: 100svh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.safe-header {
+  min-height: calc(64px + max(16px, env(safe-area-inset-top)));
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .mobile-shell-frame {
+    height: min(852px, calc(100dvh - 48px));
+    min-height: 0;
+  }
+}
+
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+
+.pixel-title {
+  font-family: 'Galmuri14', 'Galmuri11', monospace;
+  letter-spacing: -0.07em;
+  text-shadow: 1px 1px 0 rgb(255 255 255 / 35%);
+}
+
+.pixel-card {
+  border: 2px solid rgb(33 40 67 / 18%);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 6px 0 rgb(61 72 124 / 15%);
+}
+
+.pixel-button {
+  min-height: 46px;
+  border: 2px solid #344070;
+  border-radius: 12px;
+  background: #7183d1;
+  padding: 0 18px;
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 0 4px 0 #344070;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.pixel-button:active, .pixel-press:active { transform: translateY(2px); }
+.pixel-button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.pixel-input {
+  width: 100%;
+  min-height: 48px;
+  border: 2px solid #D1D5DB;
+  border-radius: 12px;
+  background: #F9FAFB;
+  font-family: 'Galmuri11', monospace;
+  color: #151927;
+  padding: 0 16px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.pixel-input:focus {
+  border-color: #515fa8;
+  box-shadow: 0 0 0 3px rgb(81 95 168 / 16%);
+}
+
+.speech-bubble {
+  position: relative;
+  z-index: 0;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 20px;
+  height: 20px;
+  background: rgb(255 255 255 / 92%);
+  border-right: 2px solid rgb(33 40 67 / 18%);
+  border-bottom: 2px solid rgb(33 40 67 / 18%);
+  box-shadow: 4px 4px 0 rgb(61 72 124 / 15%);
+  z-index: -1;
+}
+
+.pixel-button-mint {
+  min-height: 46px;
+  border: 2px solid #00A68F;
+  border-radius: 12px;
+  background: #00D0B3;
+  padding: 0 18px;
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 0 4px 0 #00A68F;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.pixel-button-mint:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #00A68F;
+}
+.pixel-button-mint:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }

@@ -1,0 +1,9 @@
+--- src/components/MissionEvidence.jsx
++++ src/components/MissionEvidence.jsx
+@@ -35,6 +35,7 @@
+ 
+ function MissionEvidence({ mission, mode, isOpen, onClose }) {
+   if (!isOpen) return null
++  console.log("Mission object in evidence:", mission)
+ 
+   return (
