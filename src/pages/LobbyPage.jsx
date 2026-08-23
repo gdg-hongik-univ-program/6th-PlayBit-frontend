@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { getMemberStats } from '../api/memberApi'
 import MobileShell from '../components/MobileShell'
 import PixelMascot from '../components/PixelMascot'
-import useAuthStore from '../stores/authStore'
 import homeBg from '../assets/home-bg.jpg'
 import settingIcon from '../assets/setting-icon.png'
 import roomListIcon from '../assets/roomlist-icon.png'
@@ -26,7 +25,6 @@ const MASCOT_MESSAGES = [
 
 function LobbyPage() {
   const navigate = useNavigate()
-  const member = useAuthStore((state) => state.member)
   const [stats, setStats] = useState({
     totalMissionSuccess: 0,
     consecutiveMissionStreak: 0,
@@ -48,7 +46,7 @@ function LobbyPage() {
   return (
     <MobileShell bgColor="bg-transparent">
       <main 
-        className="flex min-h-dvh flex-col px-5 pb-8 pt-[60px] sm:h-full sm:min-h-0"
+        className="safe-bottom flex min-h-dvh flex-col px-4 pt-[max(24px,env(safe-area-inset-top))] sm:min-h-full min-[380px]:px-5"
         style={{ backgroundImage: `url(${homeBg})`, backgroundSize: 'cover', backgroundPosition: 'center', imageRendering: 'pixelated' }}
       >
         <header className="flex items-center justify-between w-full">
@@ -63,24 +61,24 @@ function LobbyPage() {
           </button>
         </header>
         
-        <section className="mt-8 grid grid-cols-2 gap-5 px-6">
-          <article className="pixel-card flex flex-col items-center p-5 text-center !bg-white/70 backdrop-blur-md">
+        <section className="mt-7 grid grid-cols-2 gap-3 min-[380px]:mt-8 min-[380px]:gap-5 min-[380px]:px-3">
+          <article className="pixel-card flex min-w-0 flex-col items-center p-3 text-center !bg-white/70 backdrop-blur-md min-[380px]:p-5">
             <img src={fireImg} alt="불꽃" className="h-[48px] w-[48px] object-contain" style={{ imageRendering: 'pixelated' }} />
             <p className="mt-2 text-[11px] font-bold text-[#626B89]">연속 달성</p>
             <strong className="pixel-title mt-1 block text-3xl">{stats.consecutiveMissionStreak}<span className="ml-1 text-sm">일</span></strong>
           </article>
-          <article className="pixel-card flex flex-col items-center p-5 text-center !bg-white/70 backdrop-blur-md">
+          <article className="pixel-card flex min-w-0 flex-col items-center p-3 text-center !bg-white/70 backdrop-blur-md min-[380px]:p-5">
             <img src={starImg} alt="별" className="h-[48px] w-[48px] object-contain" style={{ imageRendering: 'pixelated' }} />
             <p className="mt-2 text-[11px] font-bold text-[#626B89]">총 달성 미션</p>
             <strong className="pixel-title mt-1 block text-3xl">{stats.totalMissionSuccess}<span className="ml-1 text-sm">개</span></strong>
           </article>
         </section>
         
-        <section className="mt-auto mb-16 flex flex-col items-center text-center">
-          <div className="pixel-card speech-bubble w-fit px-12 py-8 text-xl font-bold leading-relaxed whitespace-pre-wrap">
+        <section className="mb-10 mt-auto flex flex-col items-center pt-10 text-center min-[380px]:mb-14">
+          <div className="pixel-card speech-bubble w-full max-w-[320px] whitespace-pre-wrap px-4 py-5 text-[clamp(15px,4.8vw,20px)] font-bold leading-relaxed min-[380px]:px-8 min-[380px]:py-7">
             {message}
           </div>
-          <PixelMascot size="lg" className="mt-6 translate-y-8" />
+          <PixelMascot size="lg" className="mt-5 max-w-[55vw] translate-y-6 min-[380px]:mt-6 min-[380px]:translate-y-8" />
         </section>
       </main>
     </MobileShell>

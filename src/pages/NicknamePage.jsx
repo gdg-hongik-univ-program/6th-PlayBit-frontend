@@ -41,20 +41,21 @@ function NicknamePage() {
 
   return (
     <MobileShell bgColor="bg-white">
-      <div className="relative h-[112px] w-full">
+      <div className="flex min-h-dvh flex-col sm:min-h-full">
+      <div className="safe-header flex w-full items-center justify-end px-5">
         {member?.nickname && (
           <button 
             type="button" 
             onClick={() => navigate('/settings')} 
-            className="absolute right-5 top-[60px] flex h-9 w-9 items-center justify-center hover:opacity-80 transition-opacity"
+            className="flex h-9 w-9 items-center justify-center transition-opacity hover:opacity-80"
             aria-label="닫기"
           >
             <img src={arrowIcon} alt="닫기" className="h-full w-full object-contain scale-x-[-1]" />
           </button>
         )}
       </div>
-      <form onSubmit={handleNicknameSubmit} className="flex flex-col items-center px-6 pt-[60px] pb-12 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
-        <h1 className="pixel-title text-[28px] font-black text-[#211A35] text-center">
+      <form onSubmit={handleNicknameSubmit} className="safe-bottom flex flex-1 flex-col items-center px-5 pt-[clamp(24px,7dvh,60px)] min-[380px]:px-6">
+        <h1 className="pixel-title text-center text-[clamp(24px,7vw,28px)] font-black text-[#211A35]">
           닉네임을 입력해주세요
         </h1>
         
@@ -89,6 +90,7 @@ function NicknamePage() {
           </div>
         )}
       </form>
+      </div>
     </MobileShell>
   )
 }

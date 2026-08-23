@@ -19,12 +19,29 @@ function LandingPage() {
       : 'login',
   )
   const [errorMessage, setErrorMessage] = useState('')
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(
+    () => Math.min(350, window.innerWidth - 40),
+  )
 
   useEffect(() => {
     if (isAuthenticated && member?.nickname) {
       navigate('/lobby', { replace: true })
     }
   }, [isAuthenticated, member, navigate])
+
+  useEffect(() => {
+    const updateGoogleButtonWidth = () => {
+      setGoogleButtonWidth(
+        Math.max(240, Math.min(350, window.innerWidth - 40)),
+      )
+    }
+
+    window.addEventListener('resize', updateGoogleButtonWidth)
+
+    return () => {
+      window.removeEventListener('resize', updateGoogleButtonWidth)
+    }
+  }, [])
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
@@ -53,19 +70,19 @@ function LandingPage() {
 
   return (
     <MobileShell bgColor="bg-[#00C8B3]">
-      <main className="relative min-h-dvh w-full text-center sm:h-full sm:min-h-0">
-        <div className="absolute left-[32px] top-[148px] flex h-[133px] w-[339px] items-center justify-center">
-          <img src={logo} alt="PlayBit Logo" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
+      <main className="safe-bottom flex min-h-dvh w-full flex-col items-center px-5 text-center sm:min-h-full">
+        <div className="flex w-full max-w-[339px] items-center justify-center pt-[clamp(72px,15dvh,148px)]">
+          <img src={logo} alt="PlayBit Logo" className="h-auto w-full object-contain" style={{ imageRendering: 'pixelated' }} />
         </div>
         
-        <div className="absolute left-[81px] top-[337px] flex h-[254px] w-[229px] items-center justify-center">
+        <div className="mt-[clamp(36px,7dvh,56px)] flex h-[clamp(190px,30dvh,254px)] w-[min(58vw,229px)] items-center justify-center">
           <PixelMascot size="custom" className="h-full w-full" />
         </div>
         
-        <div className="absolute left-[21px] top-[678px] flex w-[350px] flex-col items-center gap-4">
+        <div className="mt-auto flex w-full max-w-[350px] flex-col items-center gap-4 pt-10">
           <div className="flex w-full justify-center">
             <GoogleLogin
-              width="350"
+              width={String(googleButtonWidth)}
               shape="pill"
               onSuccess={handleGoogleSuccess}
               onError={() => setErrorMessage('Google 로그인에 실패했습니다.')}

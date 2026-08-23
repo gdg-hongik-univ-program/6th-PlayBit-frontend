@@ -39,14 +39,14 @@ function JoinRoomPage() {
 
   return (
     <MobileShell bgColor="bg-white">
-      <PageHeader title="방 입장하기" onBack={() => navigate('/rooms')} />
-      <form onSubmit={handleJoinRoom} className="flex flex-col items-center px-6 pt-4 pb-12 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+      <div className="flex min-h-dvh flex-col sm:min-h-full">
+        <PageHeader title="방 입장하기" onBack={() => navigate('/rooms')} />
+        <form onSubmit={handleJoinRoom} className="safe-bottom flex flex-1 flex-col items-center px-5 pt-3 min-[380px]:px-6 min-[380px]:pt-4">
         <label htmlFor="entryCode" className="mt-6 self-start pixel-title text-[22px] font-black tracking-tight text-[#171717]">
           방 코드를 입력하세요
         </label>
-        <p className="mt-4 self-start text-sm font-black leading-relaxed text-gray-500">
-          상대방에게 공유받은 6자리 코드를 입력하면<br />
-          게임에 참여할 수 있어요
+        <p className="mt-4 self-start break-keep text-sm font-black leading-relaxed text-gray-500">
+          상대방에게 공유받은 6자리 코드를 입력하면 게임에 참여할 수 있어요.
         </p>
         
         <input 
@@ -73,7 +73,8 @@ function JoinRoomPage() {
              </p>
           </div>
         )}
-      </form>
+        </form>
+      </div>
     </MobileShell>
   )
 }

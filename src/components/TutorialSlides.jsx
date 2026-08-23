@@ -42,52 +42,31 @@ function TutorialSlides({ onComplete }) {
 
   const slide = slides[step]
 
-  if (step === 3) {
-    return (
-      <div className="relative h-full w-full bg-white">
-        <div className="absolute left-1/2 -translate-x-1/2 top-[160px] flex min-h-[89px] w-full px-6 items-center justify-center text-center">
-          <h2 className="pixel-title text-[30px] font-black tracking-wide leading-snug text-[#211A35] whitespace-pre-wrap">
-            {slide.text}
-          </h2>
-        </div>
-        
-        <div className="absolute left-1/2 -translate-x-1/2 top-[350px] flex h-[266px] w-[296px] items-center justify-center">
-          <img src={slide.image} alt="튜토리얼 이미지" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
-        </div>
-        
-        <Button 
-          onClick={handleNext} 
-          className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] !w-[249px] items-center justify-center text-sm font-black" 
-        >
-          시작하기
-        </Button>
-      </div>
-    )
-  }
-
   return (
-    <div className="relative h-full w-full bg-white">
-      <div className="absolute left-1/2 -translate-x-1/2 top-[110px] flex h-[70px] w-full px-6 items-center justify-center text-center">
-        <h2 className="pixel-title text-[34px] font-black tracking-wide text-[#211A35] whitespace-pre-wrap">
-          {slide.title}
+    <div className="safe-bottom flex min-h-dvh w-full flex-col items-center bg-white px-6 pt-[clamp(64px,11dvh,110px)] text-center sm:min-h-full">
+      <div className="flex min-h-16 w-full items-center justify-center">
+        <h2 className={`pixel-title whitespace-pre-wrap font-black tracking-wide text-[#211A35] ${step === 3 ? 'text-[clamp(24px,7vw,30px)] leading-snug' : 'text-[clamp(28px,8vw,34px)]'}`}>
+          {step === 3 ? slide.text : slide.title}
         </h2>
       </div>
       
-      <div className={`absolute left-1/2 -translate-x-1/2 ${step === 2 ? 'top-[200px]' : 'top-[231px]'} flex h-[266px] w-[296px] items-center justify-center`}>
+      <div className={`flex h-[clamp(190px,31dvh,266px)] w-full max-w-[296px] shrink-0 items-center justify-center ${step === 3 ? 'mt-[clamp(48px,10dvh,100px)]' : step === 2 ? 'mt-5' : 'mt-[clamp(32px,6dvh,51px)]'}`}>
         <img src={slide.image} alt="튜토리얼 이미지" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
       </div>
       
-      <div className={`absolute left-1/2 -translate-x-1/2 ${step === 2 ? 'top-[510px]' : 'top-[566px]'} flex min-h-[89px] w-full px-8 items-start justify-center text-center`}>
-        <p className="text-[19px] font-normal tracking-wide leading-relaxed text-[#211A35] whitespace-pre-wrap break-keep">
-          {slide.text}
-        </p>
-      </div>
+      {step !== 3 && (
+        <div className={`flex min-h-[89px] w-full items-start justify-center ${step === 2 ? 'mt-5' : 'mt-[clamp(28px,6dvh,69px)]'}`}>
+          <p className="whitespace-pre-wrap break-keep text-[clamp(15px,4.8vw,19px)] font-normal leading-relaxed tracking-wide text-[#211A35]">
+            {slide.text}
+          </p>
+        </div>
+      )}
       
       <Button 
         onClick={handleNext} 
-        className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] !w-[249px] items-center justify-center text-sm font-black" 
+        className="mt-auto flex min-h-[43px] !w-full max-w-[249px] items-center justify-center text-sm font-black"
       >
-        다음으로
+        {step === 3 ? '시작하기' : '다음으로'}
       </Button>
     </div>
   )
