@@ -39,17 +39,17 @@ function TutorialSlides({ onComplete }) {
   if (step === 3) {
     return (
       <div className="relative h-full w-full bg-white">
-        <div className="absolute left-[44px] top-[160px] flex h-[89px] w-[305px] items-center justify-center">
+        <div className="absolute left-1/2 -translate-x-1/2 top-[160px] flex h-[89px] w-[305px] items-center justify-center">
           <img src={slide.text} alt="튜토리얼 설명" className="h-full w-full object-contain" />
         </div>
         
-        <div className="absolute left-[48px] top-[320px] flex h-[266px] w-[296px] items-center justify-center">
+        <div className="absolute left-1/2 -translate-x-1/2 top-[320px] flex h-[266px] w-[296px] items-center justify-center">
           <img src={slide.image} alt="튜토리얼 이미지" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
         </div>
         
         <Button 
           onClick={handleNext} 
-          className="absolute left-[72px] top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
+          className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
         >
           시작하기
         </Button>
@@ -59,21 +59,21 @@ function TutorialSlides({ onComplete }) {
 
   return (
     <div className="relative h-full w-full bg-white">
-      <div className="absolute left-[53px] top-[137px] flex h-[70px] w-[287px] items-center justify-center">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[137px] flex h-[70px] w-[287px] items-center justify-center">
         <img src={slide.title} alt="튜토리얼 타이틀" className="h-full w-full object-contain" />
       </div>
       
-      <div className="absolute left-[38px] top-[231px] flex h-[266px] w-[296px] items-center justify-center">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[231px] flex h-[266px] w-[296px] items-center justify-center">
         <img src={slide.image} alt="튜토리얼 이미지" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
       </div>
       
-      <div className="absolute left-[58px] top-[566px] flex h-[89px] w-[305px] items-center justify-center">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[566px] flex h-[89px] w-[305px] items-center justify-center">
         <img src={slide.text} alt="튜토리얼 설명" className="h-full w-full object-contain" />
       </div>
       
       <Button 
         onClick={handleNext} 
-        className="absolute left-[72px] top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
+        className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
       >
         다음으로
       </Button>
