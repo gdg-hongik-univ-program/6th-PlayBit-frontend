@@ -28,13 +28,13 @@ function MissionDetailModal({
         className="w-full max-w-[350px] rounded-[26px] bg-white p-5 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <p className="text-[11px] font-black">
+        <p className="text-[11px] font-normal">
           미션 {Number(mission.position) + 1}
         </p>
-        <h2 className="pixel-title mt-2 text-lg font-black">
+        <h2 className="pixel-title mt-2 text-lg font-normal">
           {mission.content}
         </h2>
-        <p className="mt-3 text-[11px] font-bold leading-5 text-[#737A91]">
+        <p className="mt-3 text-[11px] font-normal leading-5 text-[#737A91]">
           {unavailableMessage}
         </p>
 

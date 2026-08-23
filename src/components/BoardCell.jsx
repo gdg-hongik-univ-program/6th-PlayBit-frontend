@@ -5,6 +5,7 @@ import MissionEvidence from './MissionEvidence'
 import MissionPhoto from './MissionPhoto'
 import oIcon from '../assets/O.png'
 import xIcon from '../assets/X.png'
+import sirenIcon from '../assets/siren.png'
 
 function BoardCell({
   index,
@@ -136,7 +137,11 @@ function BoardCell({
           />
         )}
         {isAlreadySabotaged && (
-          <span className="absolute bottom-1 right-1 text-xs">⚡</span>
+          <img
+            src={sirenIcon}
+            alt="사보타주"
+            className="absolute bottom-1 right-1 h-7 w-7 drop-shadow-sm object-contain z-10 pointer-events-none animate-pulse"
+          />
         )}
       </button>
 

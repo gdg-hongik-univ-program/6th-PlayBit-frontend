@@ -13,14 +13,21 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 function NotificationButton({ compact = false }) {
-  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [isSubscribed, setIsSubscribed] = useState(() => {
+    return localStorage.getItem('playbit_push_subscribed') === 'true'
+  })
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       navigator.serviceWorker.ready.then((reg) => {
         reg.pushManager.getSubscription().then((sub) => {
-          if (sub) {
+          const actualSubscribed = !!sub
+          if (actualSubscribed) {
             setIsSubscribed(true)
+            localStorage.setItem('playbit_push_subscribed', 'true')
+          } else {
+            setIsSubscribed(false)
+            localStorage.setItem('playbit_push_subscribed', 'false')
           }
         })
       })
@@ -47,6 +54,7 @@ function NotificationButton({ compact = false }) {
           await subscription.unsubscribe()
         }
         setIsSubscribed(false)
+        localStorage.setItem('playbit_push_subscribed', 'false')
         console.log('Push 구독 해지 성공')
         return
       }
@@ -69,6 +77,7 @@ function NotificationButton({ compact = false }) {
         if (!vapidPublicKey) {
           console.warn('VITE_VAPID_PUBLIC_KEY가 설정되지 않아 알림 구독을 임시로 활성화합니다.')
           setIsSubscribed(true)
+          localStorage.setItem('playbit_push_subscribed', 'true')
           return
         }
 
@@ -81,6 +90,7 @@ function NotificationButton({ compact = false }) {
       console.log('Push Subscription:', subscription)
       await savePushSubscription(subscription)
       setIsSubscribed(true)
+      localStorage.setItem('playbit_push_subscribed', 'true')
       console.log('Push 구독 서버 저장 성공')
     } catch (error) {
       console.error('Push 설정 변경 실패:', error)

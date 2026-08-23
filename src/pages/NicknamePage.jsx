@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { updateNickname } from '../api/memberApi'
 import MobileShell from '../components/MobileShell'
 import useAuthStore from '../stores/authStore'
-import nicknameTitleImg from '../assets/nickname-title.png'
-import nicknameAlertImg from '../assets/nickname-alert.png'
-import nicknameRestrictionImg from '../assets/nickname-restriction.png'
 import arrowIcon from '../assets/arrow-icon.png'
 import Button from '../components/Button'
 
@@ -57,7 +54,9 @@ function NicknamePage() {
         )}
       </div>
       <form onSubmit={handleNicknameSubmit} className="flex flex-col items-center px-6 pt-[60px] pb-12 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
-        <img src={nicknameTitleImg} alt="닉네임을 입력해주세요" className="w-[280px] object-contain" />
+        <h1 className="pixel-title text-[28px] font-black text-[#211A35] text-center">
+          닉네임을 입력해주세요
+        </h1>
         
         <input 
           id="nickname" 
@@ -68,7 +67,9 @@ function NicknamePage() {
           autoFocus 
         />
         
-        <img src={nicknameRestrictionImg} alt="제한 조건" className="mt-4 w-[280px] object-contain" />
+        <p className="mt-4 text-xs font-normal text-gray-500">
+          공백 제외 2~10자 이내 (특수문자 불가)
+        </p>
         
         <Button 
           type="submit" 
@@ -80,11 +81,11 @@ function NicknamePage() {
         
         {errorMessage && (
           <div className="mt-4 flex flex-col w-full justify-center items-center gap-2">
-            {errorMessage.includes('이미 사용') || errorMessage.includes('중복') || errorMessage.includes('409') ? (
-              <img src={nicknameAlertImg} alt="경고 메세지" className="w-[300px] object-contain" />
-            ) : (
-              <p className="text-[#9C3434] text-sm font-black text-center pixel-title">{errorMessage}</p>
-            )}
+            <p className="text-[#E45353] text-sm font-normal text-center pixel-title">
+              {errorMessage.includes('이미 사용') || errorMessage.includes('중복') || errorMessage.includes('409')
+                ? '이미 사용 중인 닉네임입니다.'
+                : errorMessage}
+            </p>
           </div>
         )}
       </form>
