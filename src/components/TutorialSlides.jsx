@@ -49,7 +49,7 @@ function TutorialSlides({ onComplete }) {
         
         <Button 
           onClick={handleNext} 
-          className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
+          className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] !w-[249px] items-center justify-center text-sm font-black" 
         >
           시작하기
         </Button>
@@ -73,7 +73,7 @@ function TutorialSlides({ onComplete }) {
       
       <Button 
         onClick={handleNext} 
-        className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
+        className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] !w-[249px] items-center justify-center text-sm font-black" 
       >
         다음으로
       </Button>
