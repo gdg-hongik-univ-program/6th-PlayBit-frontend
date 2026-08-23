@@ -3,6 +3,8 @@ import useGameStore from '../features/game/model/gameStore'
 import MissionDetailModal from './MissionDetailModal'
 import MissionEvidence from './MissionEvidence'
 import MissionPhoto from './MissionPhoto'
+import oIcon from '../assets/O.png'
+import xIcon from '../assets/X.png'
 
 function BoardCell({
   index,
@@ -21,6 +23,7 @@ function BoardCell({
   const isMissionSubmitting = useGameStore((state) => state.isMissionSubmitting)
   const [activeModal, setActiveModal] = useState(null)
   const [photoMode, setPhotoMode] = useState(null)
+  const [evidenceMode, setEvidenceMode] = useState(null)
 
   const directRole =
     mission.completedByRole ??
@@ -118,26 +121,19 @@ function BoardCell({
         type="button"
         onClick={() => setActiveModal('detail')}
         className={`relative flex items-center justify-center p-2 text-center transition-colors hover:bg-black/5 ${borderClass}`}
-        aria-label={`미션 ${Number(mission.position) + 1}: ${mission.content}`}
+        aria-label={`미션 ${Number(mission.position)}: ${mission.content}`}
       >
         {!mark && (
-          <span className="absolute left-1 top-1 text-[8px] font-black text-gray-300">
-            {Number(mission.position) + 1}
+          <span className="text-4xl font-black text-[#211A35]/20 pixel-title">
+            {Number(mission.position)}
           </span>
         )}
-        {mark ? (
-          <strong
-            className={`pixel-title text-5xl leading-none flex items-center justify-center ${
-              mark === 'X' ? 'text-[#FF6B59]' : 'text-[#87B4FF]'
-            }`}
-            style={{ textShadow: '3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 0px 3px 0 #000, 0px -3px 0 #000, 3px 0px 0 #000, -3px 0px 0 #000' }}
-          >
-            {mark}
-          </strong>
-        ) : (
-          <span className="line-clamp-3 text-[10px] font-black leading-tight text-transparent">
-            {/* hidden content to keep size or could remove */}
-          </span>
+        {mark && (
+          <img
+            src={mark === 'X' ? xIcon : oIcon}
+            alt={mark}
+            className="h-16 w-16 object-contain drop-shadow-md"
+          />
         )}
         {isAlreadySabotaged && (
           <span className="absolute bottom-1 right-1 text-xs">⚡</span>
@@ -150,10 +146,14 @@ function BoardCell({
           isCompleted={isCompleted}
           canComplete={canComplete}
           canSabotage={canSabotage}
+          isAlreadySabotaged={isAlreadySabotaged}
           isMyTurn={isMyTurn}
           onComplete={() => openPhoto('complete')}
           onSabotage={() => openPhoto('sabotage')}
-          onViewEvidence={() => setActiveModal('evidence')}
+          onViewEvidence={(mode) => {
+            setEvidenceMode(mode)
+            setActiveModal('evidence')
+          }}
           onClose={() => setActiveModal(null)}
         />
       )}
@@ -168,6 +168,7 @@ function BoardCell({
 
       <MissionEvidence
         mission={mission}
+        mode={evidenceMode}
         isOpen={activeModal === 'evidence'}
         onClose={() => setActiveModal(null)}
       />

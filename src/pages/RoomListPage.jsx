@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getRooms } from '../api/roomApi'
+import { leaveRoomApi } from '../api/playerApi'
 import MobileShell from '../components/MobileShell'
 import PageHeader from '../components/PageHeader'
 import useGameStore from '../features/game/model/gameStore'
@@ -9,6 +10,7 @@ import homeBg from '../assets/home-bg.jpg'
 import enterRoomImg from '../assets/enterRoom.png'
 import chevronRightImg from '../assets/chevron-right.png'
 import plusButtonImg from '../assets/plus-button.png'
+import binImg from '../assets/bin.png'
 
 function RoomListPage() {
   const navigate = useNavigate()
@@ -46,6 +48,19 @@ function RoomListPage() {
       isActive = false
     }
   }, [])
+
+  const handleDeleteRoom = async (e, entryCode) => {
+    e.stopPropagation()
+    if (!window.confirm('정말 이 방을 기록에서 삭제하시겠습니까?')) return
+    
+    try {
+      await leaveRoomApi(entryCode)
+      setRooms((prev) => prev.filter((room) => room.entryCode !== entryCode))
+    } catch (error) {
+      console.error('방 삭제 실패:', error)
+      alert('방을 삭제하는데 실패했습니다.')
+    }
+  }
 
   const handleOpenRoom = async (roomInfo) => {
     try {
@@ -130,9 +145,18 @@ function RoomListPage() {
                       >
                         {roomInfo.entryCode}
                       </button>
-                      <div className="flex h-5 w-5 items-center justify-center">
-                        <img src={chevronRightImg} alt="입장" className="h-full w-full object-contain" />
-                      </div>
+                      {(roomInfo.roomStatus === 'FINISHED' || roomInfo.status === 'FINISHED') ? (
+                        <button 
+                          className="flex h-5 w-5 items-center justify-center hover:opacity-70 transition-opacity"
+                          onClick={(e) => handleDeleteRoom(e, roomInfo.entryCode)}
+                        >
+                          <img src={binImg} alt="삭제" className="h-full w-full object-contain" />
+                        </button>
+                      ) : (
+                        <div className="flex h-5 w-5 items-center justify-center">
+                          <img src={chevronRightImg} alt="입장" className="h-full w-full object-contain" />
+                        </div>
+                      )}
                     </div>
                   </article>
                 ))}

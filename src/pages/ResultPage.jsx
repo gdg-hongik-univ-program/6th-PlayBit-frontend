@@ -3,17 +3,14 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import useGameStore from '../features/game/model/gameStore'
 import MobileShell from '../components/MobileShell'
 
-import victoryImg from '../assets/victory.png'
-import loseImg from '../assets/lose.png'
-import drawImg from '../assets/draw.png'
 import hansimWonImg from '../assets/hansim_won.png'
 import hansimLoseImg from '../assets/hansimlose.png'
 import hansimDrawImg from '../assets/hansimdraw.png'
 
 const RESULT_ASSETS = {
-  win: { title: victoryImg, mascot: hansimWonImg },
-  lose: { title: loseImg, mascot: hansimLoseImg },
-  draw: { title: drawImg, mascot: hansimDrawImg },
+  win: { text: '승리', mascot: hansimWonImg },
+  lose: { text: '패배', mascot: hansimLoseImg },
+  draw: { text: '무승부', mascot: hansimDrawImg },
 }
 
 const isSameMember = (firstMemberId, secondMemberId) => {
@@ -62,6 +59,10 @@ function ResultPage() {
     navigate('/rooms', { replace: true })
   }
 
+  const handleConfirm = () => {
+    navigate(`/rooms/${entryCode}/game`, { state: { fromResult: true } })
+  }
+
   if (isRoomLoading && !result) {
     return (
       <MobileShell bgColor="bg-white">
@@ -104,17 +105,28 @@ function ResultPage() {
     <MobileShell bgColor="bg-white">
       <main className="flex min-h-[calc(100dvh-4rem)] flex-col items-center px-6 pb-12 pt-[112px] sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
         
-        <div className="mt-24 flex w-full flex-col items-center gap-12">
-          <img src={currentAssets.title} alt={result} className="w-[220px] object-contain" style={{ imageRendering: 'pixelated' }} />
-          <img src={currentAssets.mascot} alt={`${result} mascot`} className="w-[260px] object-contain" style={{ imageRendering: 'pixelated' }} />
+        <div className="mt-20 flex w-full flex-col items-center gap-10">
+          <div className="flex min-h-[80px] items-center justify-center">
+            <h1 className="pixel-title text-7xl font-black text-[#211A35]">
+              {currentAssets.text}
+            </h1>
+          </div>
+          <div className="flex h-[300px] w-full items-end justify-center">
+            <img 
+              src={currentAssets.mascot} 
+              alt={`${result} mascot`} 
+              className="max-h-full max-w-full object-contain" 
+              style={{ imageRendering: 'pixelated' }} 
+            />
+          </div>
         </div>
 
         <button 
           type="button" 
-          onClick={handleGoHome} 
+          onClick={handleConfirm} 
           className="mt-10 w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white transition-opacity hover:opacity-90"
         >
-          돌아가기
+          확인
         </button>
       </main>
     </MobileShell>

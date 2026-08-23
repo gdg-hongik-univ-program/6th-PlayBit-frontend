@@ -55,7 +55,6 @@ function EvidenceSection({ title, imageUrl, comment, timestamp }) {
 
 function MissionEvidence({ mission, mode, isOpen, onClose }) {
   if (!isOpen) return null
-  console.log("Mission object in evidence:", mission)
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#10131E]/55">

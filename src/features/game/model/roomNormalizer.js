@@ -46,9 +46,26 @@ export const normalizeRoomResponse = (
             String(mission.position),
         )
 
+      let newSabotagedAt = mission.sabotagedAt || previousMission?.sabotagedAt
+      let newCompletedAt = mission.completedAt || previousMission?.completedAt
+
+      const wasSabotaged = previousMission?.sabotagedByOpponent ?? previousMission?.sabotaged
+      const isSabotaged = mission.sabotagedByOpponent ?? mission.sabotaged
+      if (!wasSabotaged && isSabotaged && !newSabotagedAt) {
+        newSabotagedAt = new Date().toISOString()
+      }
+
+      const wasCompleted = previousMission?.completedByRole || previousMission?.completedBy
+      const isCompleted = mission.completedByRole || mission.completedBy
+      if (!wasCompleted && isCompleted && !newCompletedAt) {
+        newCompletedAt = new Date().toISOString()
+      }
+
       return {
         ...previousMission,
         ...mission,
+        sabotagedAt: newSabotagedAt,
+        completedAt: newCompletedAt,
       }
     },
   )

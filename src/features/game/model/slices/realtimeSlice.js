@@ -144,10 +144,31 @@ export const createRealtimeSlice = (set, get) => ({
                         String(mission.position),
                     )
 
-                  return missionEvidence
+                  const isNewlyCompleted =
+                    missionEvidence &&
+                    (missionEvidence.imageUrl || missionEvidence.comment) &&
+                    !mission.completedAt
+
+                  const isNewlySabotaged =
+                    missionEvidence &&
+                    (missionEvidence.sabotageImageUrl ||
+                      missionEvidence.sabotageComment ||
+                      missionEvidence.sabotagedByOpponent) &&
+                    !mission.sabotagedAt
+
+                  const injectedEvidence = missionEvidence ? { ...missionEvidence } : null
+
+                  if (isNewlyCompleted && injectedEvidence) {
+                    injectedEvidence.completedAt = injectedEvidence.completedAt || new Date().toISOString()
+                  }
+                  if (isNewlySabotaged && injectedEvidence) {
+                    injectedEvidence.sabotagedAt = injectedEvidence.sabotagedAt || new Date().toISOString()
+                  }
+
+                  return injectedEvidence
                     ? {
                         ...mission,
-                        ...missionEvidence,
+                        ...injectedEvidence,
                       }
                     : mission
                 },

@@ -31,7 +31,7 @@ function JoinRoomPage() {
     try {
       await enterRoom(entryCode)
       await fetchRoom(entryCode)
-      navigate(`/rooms/${entryCode}/game`)
+      navigate('/rooms', { replace: true })
     } catch (error) {
       console.error('플레이어 등록 실패:', error)
     }
