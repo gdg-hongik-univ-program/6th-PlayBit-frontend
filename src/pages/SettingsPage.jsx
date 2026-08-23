@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { updateNickname } from '../api/memberApi'
 import MobileShell from '../components/MobileShell'
 import NotificationButton from '../components/NotificationButton'
 import PageHeader from '../components/PageHeader'
@@ -13,7 +11,6 @@ import studyImg from '../assets/study.png'
 function SettingsPage() {
   const navigate = useNavigate()
   const member = useAuthStore((state) => state.member)
-  const setMember = useAuthStore((state) => state.setMember)
   const logout = useAuthStore((state) => state.logout)
   const resetRoomState = useGameStore((state) => state.resetRoomState)
   const handleLogout = async () => {
@@ -24,6 +21,7 @@ function SettingsPage() {
 
   return (
     <MobileShell bgColor="bg-white">
+      <div className="flex min-h-dvh flex-col sm:min-h-full">
       <PageHeader 
         title="환경 설정" 
         action={
@@ -32,7 +30,7 @@ function SettingsPage() {
           </button>
         } 
       />
-      <main className="space-y-12 px-5 pb-10 pt-8 text-[#171717]">
+      <main className="safe-bottom flex-1 space-y-9 px-5 pt-5 text-[#171717] min-[380px]:space-y-12 min-[380px]:pt-8">
         <section>
           <h2 className="mb-6 border-b border-gray-200 pb-4 pixel-title text-2xl font-black">프로필</h2>
           <div className="flex items-center gap-4 border-b border-gray-200 pb-6">
@@ -72,6 +70,7 @@ function SettingsPage() {
           </div>
         </section>
       </main>
+      </div>
     </MobileShell>
   )
 }

@@ -104,7 +104,7 @@ function RoomListPage() {
             }
           />
 
-          <main className="flex-1 px-5 pb-8 pt-4 overflow-y-auto">
+          <main className="safe-bottom flex-1 overflow-y-auto px-5 pt-4">
 
             {error && (
               <p className="mb-4 rounded-xl bg-[#535F8B] px-4 py-3 text-xs font-bold text-white shadow-md">

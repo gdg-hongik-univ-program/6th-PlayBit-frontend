@@ -180,12 +180,6 @@ function GamePage() {
         state.currentTurnMemberId,
     )
 
-  const currentTurnNumber =
-    useGameStore(
-      (state) =>
-        state.currentTurnNumber,
-    )
-
   const currentTurnSabotaged =
     useGameStore(
       (state) =>
@@ -556,16 +550,18 @@ useEffect(() => {
     missions.length === 0
   ) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F7F4FF] text-[#302842]">
-        게임 정보를 불러오는
-        중입니다...
-      </div>
+      <MobileShell bgColor="bg-white">
+        <div className="flex min-h-dvh items-center justify-center px-5 text-center text-[#302842] sm:min-h-full">
+          게임 정보를 불러오는 중입니다...
+        </div>
+      </MobileShell>
     )
   }
 
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F7F4FF] px-6">
+      <MobileShell bgColor="bg-white">
+      <div className="safe-bottom flex min-h-dvh flex-col items-center justify-center gap-4 px-6 sm:min-h-full">
         <p className="text-center font-semibold text-red-500">
           {error}
         </p>
@@ -580,16 +576,18 @@ useEffect(() => {
           홈으로 돌아가기
         </button>
       </div>
+      </MobileShell>
     )
   }
 
   return (
     <MobileShell bgColor="bg-white">
+      <div className="flex min-h-dvh flex-col sm:min-h-full">
       <PageHeader title="틱택토" onBack={() => navigate('/rooms')} />
 
-      <main className="flex flex-col flex-1 px-5 pb-8 pt-4">
-        <section className={`mb-10 flex px-6 ${status === 'FINISHED' ? 'justify-center' : 'justify-between'}`}>
-          <div className="flex flex-col items-center">
+      <main className="safe-bottom flex flex-1 flex-col px-4 pt-3 min-[380px]:px-5 min-[380px]:pt-4">
+        <section className={`mb-7 flex gap-3 px-1 min-[380px]:mb-10 min-[380px]:px-6 ${status === 'FINISHED' ? 'justify-center' : 'justify-between'}`}>
+          <div className="flex min-w-0 flex-1 flex-col items-center">
             <p className="text-sm font-black">내 역할</p>
             <div className="mt-3 flex h-9 items-center justify-center">
               {effectiveMyRole === 'O' ? (
@@ -603,7 +601,7 @@ useEffect(() => {
           </div>
           {status !== 'FINISHED' && (
             <>
-              <div className="flex flex-col items-center">
+              <div className="flex min-w-0 flex-1 flex-col items-center">
                 <p className="text-sm font-black">현재 턴</p>
                 <div className="mt-3 flex h-9 items-center justify-center">
                   {(() => {
@@ -619,23 +617,23 @@ useEffect(() => {
                   })()}
                 </div>
               </div>
-              <div className="flex flex-col items-center">
+              <div className="flex min-w-0 flex-[1.35] flex-col items-center">
                 <p className="text-sm font-black">남은 시간</p>
-                <p className="mt-3 text-3xl font-black pixel-title tracking-widest text-[#00D0B3]">{formatRemainingTime(remainingSeconds)}</p>
+                <p className="mt-3 whitespace-nowrap text-[clamp(18px,6vw,30px)] font-black pixel-title tracking-wide text-[#00D0B3]">{formatRemainingTime(remainingSeconds)}</p>
               </div>
             </>
           )}
         </section>
 
-        <div className="flex items-end gap-3 px-2 mb-8 mt-2">
-          <div className="w-[100px] flex-shrink-0">
+        <div className="mb-5 mt-2 flex items-end gap-2 min-[380px]:mb-8 min-[380px]:gap-3 min-[380px]:px-2">
+          <div className="w-20 flex-shrink-0 min-[380px]:w-[100px]">
             {isMyTurn && currentTurnSabotaged && status !== 'FINISHED' ? (
               <img src={sabotagedMascot} alt="사보타주 당한 캐릭터" className="w-full object-contain" />
             ) : (
               <PixelMascot size="custom" className="w-full" />
             )}
           </div>
-          <div className="relative flex-1 rounded-[24px] bg-[#96E4D6] p-4 text-xs font-black leading-5 min-h-[100px] shadow-sm flex flex-col justify-center text-center">
+          <div className="relative flex min-h-[90px] min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-[#96E4D6] p-3 text-center text-[11px] font-black leading-5 shadow-sm min-[380px]:min-h-[100px] min-[380px]:p-4 min-[380px]:text-xs">
             {status === 'FINISHED' ? (
               resultData?.result === 'win' 
                 ? '게임이 종료되었어요. 승리를 축하해요!'
@@ -659,7 +657,8 @@ useEffect(() => {
           />
         </div>
       </main>
-    </MobileShell>
+      </div>
+      </MobileShell>
   )
 }
 

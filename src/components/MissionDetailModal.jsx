@@ -18,7 +18,7 @@ function MissionDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-[#131622]/45 p-6"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-[#131622]/45 p-4 min-[380px]:p-6"
       onClick={onClose}
     >
       <section

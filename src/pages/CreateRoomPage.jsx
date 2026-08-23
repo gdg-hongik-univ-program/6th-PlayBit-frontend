@@ -51,47 +51,35 @@ function CreateRoomPage() {
 
   return (
     <MobileShell bgColor="bg-white">
-      <PageHeader title="방 만들기" onBack={() => navigate('/rooms')} />
-      <main className="flex min-h-[calc(100dvh-112px)] flex-col px-6 pb-12 pt-8 text-center sm:min-h-0" style={{ minHeight: 'calc(100dvh - 112px)' }}>
+      <div className="flex min-h-dvh flex-col sm:min-h-full">
+        <PageHeader title="방 만들기" onBack={() => navigate('/rooms')} />
+        <main className="safe-bottom flex flex-1 flex-col px-5 pt-5 text-center min-[380px]:px-6 min-[380px]:pt-8">
         
         {/* Room Name Input */}
-        <section className="mb-12 flex flex-col items-start w-full px-2">
+        <section className="mb-8 flex w-full flex-col items-start px-1 min-[380px]:mb-10 min-[380px]:px-2">
           <label htmlFor="roomName" className="pixel-title text-xl font-black text-[#171717]">방 이름을 입력하세요</label>
-          <input 
+          <input
             id="roomName" 
             value={roomName} 
             onChange={(event) => setRoomName(event.target.value.slice(0, 20))} 
-            className="pixel-input mt-5 w-full text-left text-lg font-bold" 
+            className="pixel-input mt-4 w-full text-left text-base font-bold min-[380px]:mt-5 min-[380px]:text-lg"
             placeholder="갓생 도전" 
           />
         </section>
 
         {/* Categories */}
-        <section className="flex flex-col items-center px-2 w-full">
-          <h2 className="mb-6 self-start pixel-title text-xl font-black text-[#171717]">카테고리를 선택하세요</h2>
-          <div className="flex justify-center gap-8 w-full mb-6">
-            {categories.slice(0, 2).map((category) => (
+        <section className="flex w-full flex-col items-center px-1 min-[380px]:px-2">
+          <h2 className="mb-5 self-start pixel-title text-xl font-black text-[#171717] min-[380px]:mb-6">카테고리를 선택하세요</h2>
+          <div className="grid w-full grid-cols-2 gap-3 min-[380px]:grid-cols-3 min-[380px]:gap-4">
+            {categories.map((category) => (
               <button 
                 key={category.apiValue} 
                 type="button" 
                 onClick={() => setSelectedCategory(category)} 
-                className={`flex w-[104px] h-[120px] flex-col items-center justify-center gap-3 rounded-3xl border-[3px] transition-all ${selectedCategory?.apiValue === category.apiValue ? 'border-[#00D0B3] bg-[#E5FAF7] scale-105 shadow-md' : 'border-[#F1F2F5] bg-[#F8F9FB]'}`}
+                className={`flex min-h-[104px] min-w-0 flex-col items-center justify-center gap-2 rounded-3xl border-[3px] p-2 transition-all min-[380px]:min-h-[120px] min-[380px]:gap-3 ${selectedCategory?.apiValue === category.apiValue ? 'border-[#00D0B3] bg-[#E5FAF7] scale-[1.03] shadow-md' : 'border-[#F1F2F5] bg-[#F8F9FB]'}`}
               >
-                <img src={category.icon} alt={category.title} className="w-[52px] h-[52px] object-contain" />
-                <span className="text-sm font-black text-[#171717]">{category.title}</span>
-              </button>
-            ))}
-          </div>
-          <div className="flex justify-center gap-4 w-full">
-            {categories.slice(2, 5).map((category) => (
-              <button 
-                key={category.apiValue} 
-                type="button" 
-                onClick={() => setSelectedCategory(category)} 
-                className={`flex w-[104px] h-[120px] flex-col items-center justify-center gap-3 rounded-3xl border-[3px] transition-all ${selectedCategory?.apiValue === category.apiValue ? 'border-[#00D0B3] bg-[#E5FAF7] scale-105 shadow-md' : 'border-[#F1F2F5] bg-[#F8F9FB]'}`}
-              >
-                <img src={category.icon} alt={category.title} className="w-[52px] h-[52px] object-contain" />
-                <span className="text-sm font-black text-[#171717]">{category.title}</span>
+                <img src={category.icon} alt={category.title} className="h-11 w-11 object-contain min-[380px]:h-[52px] min-[380px]:w-[52px]" />
+                <span className="break-keep text-xs font-black text-[#171717] min-[380px]:text-sm">{category.title}</span>
               </button>
             ))}
           </div>
@@ -110,11 +98,12 @@ function CreateRoomPage() {
           type="button" 
           onClick={handleCreate} 
           disabled={!selectedCategory || !roomName.trim() || isProcessing} 
-          className="mt-10 w-[240px] mx-auto"
+          className="mx-auto mt-8 w-full max-w-[240px] min-[380px]:mt-10"
         >
           {isProcessing ? '방 준비 중...' : '방 생성하기'}
         </Button>
-      </main>
+        </main>
+      </div>
     </MobileShell>
   )
 }

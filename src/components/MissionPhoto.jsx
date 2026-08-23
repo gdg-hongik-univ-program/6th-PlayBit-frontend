@@ -69,7 +69,7 @@ function MissionPhoto({ mission, mode, isOpen, onClose, onComplete }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#10131E]/55">
-      <section className="max-h-[92dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[30px] bg-white p-5 shadow-2xl">
+      <section className="safe-bottom max-h-[92dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[30px] bg-white p-4 shadow-2xl min-[380px]:p-5">
         <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-[#CBD0DB]" />
         <div className="flex items-start justify-between"><div><p className={`pixel-title text-3xl font-normal ${isSabotage ? 'text-[#D65353]' : 'text-[#00D0B3]'}`}>{isSabotage ? '사보타주 인증' : '미션 인증'}</p><h2 className="mt-2 text-lg font-normal text-gray-700">{mission?.content ?? '미션'}</h2></div><button type="button" onClick={handleClose} disabled={isSubmitting} className="flex h-8 w-8 items-center justify-center transition-transform hover:scale-105 active:scale-95"><img src={closeIcon} alt="닫기" className="h-full w-full object-contain" /></button></div>
         <label className="mt-6 flex min-h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#96E4D6] bg-[#E5FAF7] p-4 text-center">

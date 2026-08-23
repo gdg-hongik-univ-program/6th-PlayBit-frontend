@@ -66,7 +66,7 @@ function ResultPage() {
   if (isRoomLoading && !result) {
     return (
       <MobileShell bgColor="bg-white">
-        <main className="flex min-h-dvh items-center justify-center">
+        <main className="flex min-h-dvh items-center justify-center px-5 sm:min-h-full">
           <p className="font-black text-gray-500">결과를 불러오는 중입니다...</p>
         </main>
       </MobileShell>
@@ -76,9 +76,9 @@ function ResultPage() {
   if (error && !result) {
     return (
       <MobileShell bgColor="bg-white">
-        <main className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-6 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+        <main className="safe-bottom flex min-h-dvh flex-col items-center justify-center gap-6 px-5 sm:min-h-full">
           <p className="text-center font-black text-[#9C3434]">{error}</p>
-          <button type="button" onClick={handleGoHome} className="w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white hover:opacity-90">
+          <button type="button" onClick={handleGoHome} className="w-full max-w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white hover:opacity-90">
             돌아가기
           </button>
         </main>
@@ -89,9 +89,9 @@ function ResultPage() {
   if (!result) {
     return (
       <MobileShell bgColor="bg-white">
-        <main className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-6 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+        <main className="safe-bottom flex min-h-dvh flex-col items-center justify-center gap-6 px-5 sm:min-h-full">
           <p className="font-black text-gray-500">게임 결과를 찾을 수 없습니다.</p>
-          <button type="button" onClick={handleGoHome} className="w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white hover:opacity-90">
+          <button type="button" onClick={handleGoHome} className="w-full max-w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white hover:opacity-90">
             돌아가기
           </button>
         </main>
@@ -103,15 +103,15 @@ function ResultPage() {
 
   return (
     <MobileShell bgColor="bg-white">
-      <main className="flex min-h-[calc(100dvh-4rem)] flex-col items-center px-6 pb-12 pt-[112px] sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+      <main className="safe-bottom flex min-h-dvh flex-col items-center px-5 pt-[clamp(56px,10dvh,96px)] sm:min-h-full">
         
-        <div className="mt-20 flex w-full flex-col items-center gap-10">
+        <div className="flex w-full flex-1 flex-col items-center justify-center gap-[clamp(20px,5dvh,40px)]">
           <div className="flex min-h-[80px] items-center justify-center">
-            <h1 className="pixel-title text-7xl font-black text-[#211A35]">
+            <h1 className="pixel-title text-[clamp(48px,17vw,72px)] font-black text-[#211A35]">
               {currentAssets.text}
             </h1>
           </div>
-          <div className="flex h-[300px] w-full items-end justify-center">
+          <div className="flex h-[clamp(210px,36dvh,300px)] w-full items-end justify-center">
             <img 
               src={currentAssets.mascot} 
               alt={`${result} mascot`} 
@@ -124,7 +124,7 @@ function ResultPage() {
         <button 
           type="button" 
           onClick={handleConfirm} 
-          className="mt-10 w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white transition-opacity hover:opacity-90"
+          className="mt-6 w-full max-w-[240px] rounded-full bg-[#00D0B3] py-4 text-base font-black text-white transition-opacity hover:opacity-90"
         >
           확인
         </button>
