@@ -25,7 +25,7 @@ function EvidenceSection({ title, imageUrl, comment, timestamp }) {
         hour: 'numeric',
         minute: 'numeric',
       })
-    } catch (e) {
+    } catch {
       return ''
     }
   }
@@ -66,7 +66,7 @@ function MissionEvidence({ mission, mode, isOpen, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label="미션 인증 기록"
-        className="max-h-[92dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[30px] bg-white p-5 shadow-2xl"
+        className="safe-bottom max-h-[92dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[30px] bg-white p-4 shadow-2xl min-[380px]:p-5"
       >
         <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-[#CBD0DB]" />
         <div className="flex items-start justify-between gap-4">

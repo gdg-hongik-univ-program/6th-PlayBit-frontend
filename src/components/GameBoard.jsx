@@ -13,8 +13,8 @@ function GameBoard({ entryCode, missions, players, disabled = false }) {
   )
 
   return (
-    <section className="px-4 py-8">
-      <div className="grid grid-cols-3 mx-auto w-[300px] h-[300px]">
+    <section className="px-3 py-6 min-[380px]:px-4 min-[380px]:py-8">
+      <div className="mx-auto grid aspect-square w-full max-w-[300px] grid-cols-3">
         {sortedMissions.map((mission, index) => (
           <BoardCell
             key={mission.position}
