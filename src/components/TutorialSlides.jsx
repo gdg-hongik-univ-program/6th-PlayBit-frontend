@@ -14,7 +14,7 @@ import textImg3 from '../assets/tutorial-text-3.png'
 import imageImg4 from '../assets/tutorial-image-4.png'
 import textImg4 from '../assets/tutorial-text-4.png'
 
-import LiquidButton from './LiquidButton'
+import Button from './Button'
 
 const slides = [
   { title: titleImg1, image: characterImg1, text: textImg1 },
@@ -47,11 +47,12 @@ function TutorialSlides({ onComplete }) {
           <img src={slide.image} alt="튜토리얼 이미지" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
         </div>
         
-        <LiquidButton 
+        <Button 
           onClick={handleNext} 
-          className="absolute left-[72px] top-[688px] flex h-[43px] w-[249px] items-center justify-center" 
-          alt="시작하기" 
-        />
+          className="absolute left-[72px] top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
+        >
+          시작하기
+        </Button>
       </div>
     )
   }
@@ -70,11 +71,12 @@ function TutorialSlides({ onComplete }) {
         <img src={slide.text} alt="튜토리얼 설명" className="h-full w-full object-contain" />
       </div>
       
-      <LiquidButton 
+      <Button 
         onClick={handleNext} 
-        className="absolute left-[72px] top-[688px] flex h-[43px] w-[249px] items-center justify-center" 
-        alt="다음으로" 
-      />
+        className="absolute left-[72px] top-[688px] flex h-[43px] w-[249px] items-center justify-center text-sm font-black" 
+      >
+        다음으로
+      </Button>
     </div>
   )
 }
