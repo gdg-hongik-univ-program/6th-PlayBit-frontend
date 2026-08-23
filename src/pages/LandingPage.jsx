@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { GoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
-import { googleLogin } from '../api/authApi'
+import { getMe, googleLogin } from '../api/authApi'
 
 import MobileShell from '../components/MobileShell'
 import PixelMascot from '../components/PixelMascot'
@@ -48,8 +48,14 @@ function LandingPage() {
       setErrorMessage('')
       const idToken = credentialResponse.credential
       if (!idToken) throw new Error('Google 로그인 정보를 가져오지 못했습니다.')
-      const response = await googleLogin(idToken)
-      const loggedInMember = response.data
+      await googleLogin(idToken)
+
+      /*
+       * 로그인 응답만으로 인증 상태를 바꾸지 않고, 실제 세션 쿠키가
+       * 저장되어 인증 요청에 사용되는지 확인합니다.
+       */
+      const sessionResponse = await getMe()
+      const loggedInMember = sessionResponse.data
       setMember(loggedInMember)
       if (loggedInMember.nickname) {
         navigate('/lobby', { replace: true })
