@@ -2,9 +2,6 @@ import {
   fetchEventSource,
 } from '@microsoft/fetch-event-source'
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL
-
 export const connectRoomSSE = ({
   entryCode,
   signal,
@@ -18,15 +15,8 @@ export const connectRoomSSE = ({
     )
   }
 
-  const baseUrl =
-    API_BASE_URL
-      ? API_BASE_URL.endsWith('/')
-        ? API_BASE_URL.slice(0, -1)
-        : API_BASE_URL
-      : ''
-
   const url =
-    `${baseUrl}/api/rooms/` +
+    '/api/rooms/' +
     `${encodeURIComponent(entryCode)}/subscribe`
 
   return fetchEventSource(url, {
