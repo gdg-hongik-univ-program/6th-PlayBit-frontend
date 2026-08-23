@@ -3,6 +3,7 @@ function MissionDetailModal({
   isCompleted,
   canComplete,
   canSabotage,
+  isAlreadySabotaged,
   isMyTurn,
   onComplete,
   onSabotage,
@@ -27,13 +28,13 @@ function MissionDetailModal({
         className="w-full max-w-[350px] rounded-[26px] bg-white p-5 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <p className="text-[11px] font-black">
+        <p className="text-[11px] font-normal">
           미션 {Number(mission.position) + 1}
         </p>
-        <h2 className="pixel-title mt-2 text-lg font-black">
+        <h2 className="pixel-title mt-2 text-lg font-normal">
           {mission.content}
         </h2>
-        <p className="mt-3 text-[11px] font-bold leading-5 text-[#737A91]">
+        <p className="mt-3 text-[11px] font-normal leading-5 text-[#737A91]">
           {unavailableMessage}
         </p>
 
@@ -41,30 +42,44 @@ function MissionDetailModal({
           {isCompleted ? (
             <button
               type="button"
-              onClick={onViewEvidence}
-              className="w-full rounded-xl bg-[#E7E8EC] px-4 py-3 text-sm font-black"
+              onClick={() => onViewEvidence('complete')}
+              className="w-full rounded-xl bg-[#00D0B3] text-white transition-colors hover:opacity-90 px-4 py-3 text-sm font-black"
             >
-              인증 내역 보기
+              미션 인증 내역 보기
             </button>
           ) : (
             <button
               type="button"
               onClick={onComplete}
               disabled={!canComplete}
-              className="w-full rounded-xl bg-[#E7E8EC] px-4 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45"
+              className={`w-full rounded-xl px-4 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45 transition-colors ${
+                canComplete ? 'bg-[#00D0B3] text-white hover:opacity-90' : 'bg-[#E7E8EC]'
+              }`}
             >
               미션 완료 인증하기
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={onSabotage}
-            disabled={!canSabotage}
-            className="w-full rounded-xl bg-[#E7E8EC] px-4 py-3 text-sm font-black text-[#E45353] disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            사보타주 인증하기
-          </button>
+          {isAlreadySabotaged ? (
+            <button
+              type="button"
+              onClick={() => onViewEvidence('sabotage')}
+              className="w-full rounded-xl bg-[#00D0B3] text-white transition-colors hover:opacity-90 px-4 py-3 text-sm font-black"
+            >
+              사보타주 인증 내역 보기
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onSabotage}
+              disabled={!canSabotage}
+              className={`w-full rounded-xl px-4 py-3 text-sm font-black text-[#E45353] transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
+                canSabotage ? 'bg-[#00D0B3] hover:opacity-90' : 'bg-[#E7E8EC]'
+              }`}
+            >
+              사보타주 인증하기
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}

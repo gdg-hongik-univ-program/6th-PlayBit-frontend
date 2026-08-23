@@ -42,12 +42,16 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    await logoutApi()
-
-    set({
-      member: null,
-      isAuthenticated: false,
-    })
+    try {
+      await logoutApi()
+    } catch (error) {
+      console.error('로그아웃 API 호출 실패:', error)
+    } finally {
+      set({
+        member: null,
+        isAuthenticated: false,
+      })
+    }
   },
 }))
 

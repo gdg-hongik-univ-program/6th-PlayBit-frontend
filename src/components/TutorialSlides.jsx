@@ -1,37 +1,94 @@
 import { useState } from 'react'
-import PixelMascot from './PixelMascot'
+import characterImg1 from '../assets/tutorial-character.png'
+import imageImg2 from '../assets/tutorial-image-2.png'
+import imageImg3 from '../assets/tutorial-image-3.png'
+import imageImg4 from '../assets/tutorial-image-4.png'
 
-const tutorialSlides = [
-  { eyebrow: 'TUTORIAL 01', title: '무슨 앱이죠??', symbol: '×  ♪  ○', description: '방을 만들고, 친구와 함께 습관을 틱택토처럼 즐겨요.' },
-  { eyebrow: 'TUTORIAL 02', title: '틱택토 룰은?', symbol: '× │ ○\n─ ┼ ─\n○ │ ×', description: '사진을 인증해 미션 칸을 차지하세요. 먼저 세 칸을 연결하면 승리해요!' },
-  { eyebrow: 'TUTORIAL 03', title: '사보타주??', symbol: '⚡ −6H', description: '상대가 완료한 미션을 나도 완수하면, 상대 턴 제한시간을 줄일 수 있어요.' },
-  { eyebrow: 'TUTORIAL 04', title: '꾸준함이 승리!', symbol: '★', description: '가볍게 시작하고 꾸준히 즐기다 보면 어느새 습관이 완성됩니다.' },
+import Button from './Button'
+
+const slides = [
+  { 
+    title: "무슨 앱이죠??", 
+    image: characterImg1, 
+    text: "방을 만들고, 친구와 함께\n습관 틱택토를 진행해요" 
+  },
+  { 
+    title: "틱택토 룰은?", 
+    image: imageImg2, 
+    text: "미션을 완료하면 내 칸이 돼요.\n세 칸을 먼저 연결하면 승리해요!" 
+  },
+  { 
+    title: "사보타주??", 
+    image: imageImg3, 
+    text: "상대가 완료한 미션을\n내가 완수하면,\n상대의 턴 제한시간을\n6시간 감소시킬 수 있어요" 
+  },
+  { 
+    title: null, 
+    image: imageImg4, 
+    text: "꾸준히 즐기다 보면\n나도 모르게\n습관이 형성될 거예요!" 
+  },
 ]
 
 function TutorialSlides({ onComplete }) {
   const [step, setStep] = useState(0)
-  const slide = tutorialSlides[step]
-  const isLast = step === tutorialSlides.length - 1
+  
+  const handleNext = () => {
+    if (step === slides.length - 1) {
+      onComplete()
+    } else {
+      setStep((prev) => prev + 1)
+    }
+  }
+
+  const slide = slides[step]
+
+  if (step === 3) {
+    return (
+      <div className="relative h-full w-full bg-white">
+        <div className="absolute left-1/2 -translate-x-1/2 top-[160px] flex min-h-[89px] w-full px-6 items-center justify-center text-center">
+          <h2 className="pixel-title text-[30px] font-black tracking-wide leading-snug text-[#211A35] whitespace-pre-wrap">
+            {slide.text}
+          </h2>
+        </div>
+        
+        <div className="absolute left-1/2 -translate-x-1/2 top-[350px] flex h-[266px] w-[296px] items-center justify-center">
+          <img src={slide.image} alt="튜토리얼 이미지" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
+        </div>
+        
+        <Button 
+          onClick={handleNext} 
+          className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] !w-[249px] items-center justify-center text-sm font-black" 
+        >
+          시작하기
+        </Button>
+      </div>
+    )
+  }
 
   return (
-    <div className="flex min-h-dvh flex-col px-6 pb-8 pt-12">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-black tracking-[0.18em] text-[#445080]">{slide.eyebrow}</span>
-        <button type="button" onClick={() => isLast ? onComplete() : setStep(step + 1)} aria-label={isLast ? '튜토리얼 완료' : '다음 설명'} className="pixel-press text-2xl font-black">→</button>
+    <div className="relative h-full w-full bg-white">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[110px] flex h-[70px] w-full px-6 items-center justify-center text-center">
+        <h2 className="pixel-title text-[34px] font-black tracking-wide text-[#211A35] whitespace-pre-wrap">
+          {slide.title}
+        </h2>
       </div>
-      <h1 className="pixel-title mt-10 text-3xl font-black">{slide.title}</h1>
-      <div className="flex flex-1 flex-col items-center justify-center gap-6">
-        {step === 1 ? (
-          <pre className="pixel-title whitespace-pre text-center text-5xl leading-[0.9]">{slide.symbol}</pre>
-        ) : (
-          <><div className="pixel-title text-center text-4xl font-black text-[#D8624E]">{slide.symbol}</div><PixelMascot size="md" /></>
-        )}
+      
+      <div className={`absolute left-1/2 -translate-x-1/2 ${step === 2 ? 'top-[200px]' : 'top-[231px]'} flex h-[266px] w-[296px] items-center justify-center`}>
+        <img src={slide.image} alt="튜토리얼 이미지" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
       </div>
-      <p className="min-h-16 break-keep text-sm font-bold leading-6 text-[#22283D]">{slide.description}</p>
-      <div className="mt-6 flex gap-2">
-        {tutorialSlides.map((item, index) => <span key={item.eyebrow} className={`h-2 flex-1 rounded-full ${index <= step ? 'bg-[#515FA8]' : 'bg-white/45'}`} />)}
+      
+      <div className={`absolute left-1/2 -translate-x-1/2 ${step === 2 ? 'top-[510px]' : 'top-[566px]'} flex min-h-[89px] w-full px-8 items-start justify-center text-center`}>
+        <p className="text-[19px] font-normal tracking-wide leading-relaxed text-[#211A35] whitespace-pre-wrap break-keep">
+          {slide.text}
+        </p>
       </div>
-      {isLast && <button type="button" onClick={onComplete} className="pixel-button mt-6 w-full">시작하기</button>}
+      
+      <Button 
+        onClick={handleNext} 
+        className="absolute left-1/2 -translate-x-1/2 top-[688px] flex h-[43px] !w-[249px] items-center justify-center text-sm font-black" 
+      >
+        다음으로
+      </Button>
     </div>
   )
 }

@@ -1,13 +1,13 @@
-import mascot from '../assets/mascot-celebrate.png'
+import mascot from '../assets/mascot.png'
 
 function PixelMascot({ size = 'md', className = '' }) {
-  const sizes = { sm: 'h-28 w-28', md: 'h-44 w-44', lg: 'h-60 w-60' }
+  const sizes = { sm: 'h-28 w-28', md: 'h-44 w-44', lg: 'h-60 w-60', custom: '' }
 
   return (
     <img
       src={mascot}
-      alt="두 팔을 들고 기뻐하는 PlayBit 픽셀 캐릭터"
-      className={`${sizes[size]} rounded-[28px] object-cover ${className}`}
+      alt="PlayBit 픽셀 캐릭터"
+      className={`${sizes[size]} object-contain ${className}`}
       style={{ imageRendering: 'pixelated' }}
     />
   )

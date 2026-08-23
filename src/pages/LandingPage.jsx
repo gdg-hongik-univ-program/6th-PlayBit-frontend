@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { GoogleLogin } from '@react-oauth/google'
 import { useNavigate } from 'react-router-dom'
 import { googleLogin } from '../api/authApi'
-import { updateNickname } from '../api/memberApi'
+
 import MobileShell from '../components/MobileShell'
 import PixelMascot from '../components/PixelMascot'
 import TutorialSlides from '../components/TutorialSlides'
 import useAuthStore from '../stores/authStore'
-
+import logo from '../assets/logo.png'
 function LandingPage() {
   const navigate = useNavigate()
   const member = useAuthStore((state) => state.member)
@@ -18,8 +18,6 @@ function LandingPage() {
       ? 'tutorial'
       : 'login',
   )
-  const [nickname, setNickname] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
@@ -47,58 +45,33 @@ function LandingPage() {
     }
   }
 
-  const handleNicknameSubmit = async (event) => {
-    event.preventDefault()
-    const trimmedNickname = nickname.trim()
-    if (!trimmedNickname) return
 
-    try {
-      setIsSubmitting(true)
-      setErrorMessage('')
-      const response = await updateNickname(trimmedNickname)
-      setMember(response?.data ?? { ...member, nickname: trimmedNickname })
-      navigate('/lobby', { replace: true })
-    } catch (error) {
-      setErrorMessage(error.response?.data?.error?.message || '닉네임 설정에 실패했습니다.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   if (mode === 'tutorial' && isAuthenticated) {
-    return <MobileShell><TutorialSlides onComplete={() => setMode('nickname')} /></MobileShell>
-  }
-
-  if (mode === 'nickname' && isAuthenticated) {
-    return (
-      <MobileShell>
-        <form onSubmit={handleNicknameSubmit} className="flex min-h-dvh flex-col px-6 pb-10 pt-24">
-          <span className="text-xs font-black text-[#485587]">WELCOME, PLAYER!</span>
-          <h1 className="pixel-title mt-3 text-3xl font-black">닉네임을 정해주세요</h1>
-          <p className="mt-3 text-sm leading-6 text-[#4C5575]">친구가 알아볼 수 있는 이름이면 좋아요. 2~10자로 입력해주세요.</p>
-          <PixelMascot size="md" className="mx-auto my-10" />
-          <label htmlFor="nickname" className="mb-2 text-xs font-black">닉네임</label>
-          <input id="nickname" className="pixel-input" value={nickname} onChange={(event) => setNickname(event.target.value.slice(0, 10))} placeholder="바나나 치" autoFocus />
-          {errorMessage && <p className="mt-3 rounded-xl bg-[#525E8C] px-4 py-3 text-xs font-bold text-white">⚠ {errorMessage}</p>}
-          <button type="submit" disabled={nickname.trim().length < 2 || isSubmitting} className="pixel-button mt-auto w-full">{isSubmitting ? '저장 중...' : '저장하기'}</button>
-        </form>
-      </MobileShell>
-    )
+    return <MobileShell><TutorialSlides onComplete={() => navigate('/nickname')} /></MobileShell>
   }
 
   return (
-    <MobileShell>
-      <main className="flex min-h-dvh flex-col items-center px-6 pb-12 pt-24 text-center">
-        <p className="text-xs font-black tracking-[0.28em] text-[#4D5989]">HABIT TIC-TAC-TOE</p>
-        <h1 className="pixel-title mt-3 text-5xl font-black tracking-[-0.12em]">PlayBit</h1>
-        <PixelMascot size="lg" className="mt-12" />
-        <p className="mt-6 break-keep text-sm font-bold leading-6 text-[#394260]">친구와 미션을 인증하고<br />세 칸을 먼저 완성해보세요.</p>
-        <div className="mt-auto flex w-full flex-col items-center gap-4">
-          <div className="w-full overflow-hidden rounded-xl bg-white p-1 shadow-[0_4px_0_#4A5687]">
-            <GoogleLogin width="260" onSuccess={handleGoogleSuccess} onError={() => setErrorMessage('Google 로그인에 실패했습니다.')} />
+    <MobileShell bgColor="bg-[#00C8B3]">
+      <main className="relative min-h-dvh w-full text-center sm:h-full sm:min-h-0">
+        <div className="absolute left-[32px] top-[148px] flex h-[133px] w-[339px] items-center justify-center">
+          <img src={logo} alt="PlayBit Logo" className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
+        </div>
+        
+        <div className="absolute left-[81px] top-[337px] flex h-[254px] w-[229px] items-center justify-center">
+          <PixelMascot size="custom" className="h-full w-full" />
+        </div>
+        
+        <div className="absolute left-[21px] top-[678px] flex w-[350px] flex-col items-center gap-4">
+          <div className="flex w-full justify-center">
+            <GoogleLogin
+              width="350"
+              shape="pill"
+              onSuccess={handleGoogleSuccess}
+              onError={() => setErrorMessage('Google 로그인에 실패했습니다.')}
+            />
           </div>
           {errorMessage && <p className="text-xs font-bold text-[#9C3434]">{errorMessage}</p>}
-          <p className="text-[10px] text-[#596486]">계속하면 서비스 이용약관에 동의한 것으로 간주합니다.</p>
         </div>
       </main>
     </MobileShell>

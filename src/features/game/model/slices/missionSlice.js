@@ -66,6 +66,19 @@ export const createMissionSlice = (set, get) => ({
         comment,
       )
 
+      const currentMissions = get().missions || []
+      set({
+        missions: currentMissions.map((m) =>
+          String(m.position) === String(position)
+            ? { ...m, completedAt: new Date().toISOString() }
+            : m
+        )
+      })
+
+      if (missionResult && missionResult.mission) {
+        missionResult.mission.completedAt = new Date().toISOString()
+      }
+
       return await refreshRoom(
         entryCode,
         set,
@@ -112,6 +125,20 @@ export const createMissionSlice = (set, get) => ({
         image,
         comment,
       )
+
+      // 백엔드 응답에 시간이 없으므로, 프론트에서 먼저 현재 시간을 해당 미션에 기록합니다.
+      const currentMissions = get().missions || []
+      set({
+        missions: currentMissions.map((m) =>
+          String(m.position) === String(position)
+            ? { ...m, sabotagedAt: new Date().toISOString() }
+            : m
+        )
+      })
+
+      if (missionResult && missionResult.mission) {
+        missionResult.mission.sabotagedAt = new Date().toISOString()
+      }
 
       return await refreshRoom(
         entryCode,

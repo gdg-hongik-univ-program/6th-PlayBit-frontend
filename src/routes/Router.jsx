@@ -9,6 +9,7 @@ import ResultPage from '../pages/ResultPage'
 import RoomListPage from '../pages/RoomListPage'
 import SettingsPage from '../pages/SettingsPage'
 import TutorialPage from '../pages/TutorialPage'
+import NicknamePage from '../pages/NicknamePage'
 import ProtectedRoute from './ProtectedRoute'
 
 const router = createBrowserRouter([
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: '/tutorial',
         element: <TutorialPage />,
+      },
+      {
+        path: '/nickname',
+        element: <NicknamePage />,
       },
       {
         path: '/settings',

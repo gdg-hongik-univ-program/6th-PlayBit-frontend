@@ -6,11 +6,16 @@ import {
 import {
   useNavigate,
   useParams,
+  useLocation,
 } from 'react-router-dom'
 import useGameStore from '../features/game/model/gameStore'
 import GameBoard from '../components/GameBoard'
 import MobileShell from '../components/MobileShell'
 import PixelMascot from '../components/PixelMascot'
+import PageHeader from '../components/PageHeader'
+import oIcon from '../assets/O.png'
+import xIcon from '../assets/X.png'
+import sabotagedMascot from '../assets/hansimsabotagged.png'
 
 const WINNING_LINES = [
   [0, 1, 2],
@@ -46,7 +51,7 @@ const formatRemainingTime = (seconds) => {
     (safeSeconds % 3600) / 60,
   )
 
-  return `${hours}시간 ${minutes}분`
+  return `${hours}h ${minutes}m`
 }
 
 const getMissionOwnerRole = (
@@ -151,6 +156,7 @@ const getMissionCount = (
 function GamePage() {
   const { entryCode } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const missions = useGameStore(
     (state) => state.missions,
@@ -525,7 +531,8 @@ useEffect(() => {
   useEffect(() => {
     if (
       !entryCode ||
-      !resultData
+      !resultData ||
+      location.state?.fromResult
     ) {
       return
     }
@@ -541,6 +548,7 @@ useEffect(() => {
     entryCode,
     resultData,
     navigate,
+    location.state,
   ])
 
   if (
@@ -576,137 +584,84 @@ useEffect(() => {
   }
 
   return (
-    <MobileShell>
-      <header className="flex h-16 items-center justify-between px-5 pt-2">
-        <button
-          type="button"
-          onClick={() =>
-            navigate('/rooms')
-          }
-          className="pixel-press text-2xl font-black"
-        >
-          ←
-        </button>
+    <MobileShell bgColor="bg-white">
+      <PageHeader title="틱택토" onBack={() => navigate('/rooms')} />
 
-        <p className="text-sm font-medium text-[#74698E]">
-          GAME
-        </p>
-
-        <div className="w-[62px]" />
-      </header>
-
-      <main className="px-5 pb-8 pt-3">
-        <section className="mb-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="pixel-title text-2xl font-black text-[#211A35]">
-                습관 빙고
-              </h1>
-
-              <p className="mt-1 text-sm text-[#8175A5]">
-                세 칸을 먼저 완성하면 승리해요.
-              </p>
-            </div>
-
-            <div className="pixel-card px-4 py-2 text-center">
-              <p className="text-xs font-semibold text-[#8B00F5]">
-                입장 코드
-              </p>
-
-              <p className="mt-1 text-xl font-black tracking-widest text-[#211A35]">
-                {entryCode}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            <div className="pixel-card p-3">
-              <p className="text-xs text-[#8175A5]">
-                내 역할
-              </p>
-
-              <p className="mt-1 text-xl font-black text-[#8B00F5]">
-                {effectiveMyRole ?? '-'}
-              </p>
-            </div>
-
-            <div className="pixel-card p-3">
-              <p className="text-xs text-[#8175A5]">
-                게임 상태
-              </p>
-
-              <p className="mt-1 text-sm font-bold text-[#211A35]">
-                {status}
-              </p>
-
-              {currentTurnNumber !==
-                null && (
-                <p className="mt-1 text-xs text-[#8175A5]">
-                  {currentTurnNumber}번째
-                  턴
-                </p>
+      <main className="flex flex-col flex-1 px-5 pb-8 pt-4">
+        <section className={`mb-10 flex px-6 ${status === 'FINISHED' ? 'justify-center' : 'justify-between'}`}>
+          <div className="flex flex-col items-center">
+            <p className="text-sm font-black">내 역할</p>
+            <div className="mt-3 flex h-9 items-center justify-center">
+              {effectiveMyRole === 'O' ? (
+                <img src={oIcon} alt="O" className="h-full object-contain" />
+              ) : effectiveMyRole === 'X' ? (
+                <img src={xIcon} alt="X" className="h-full object-contain" />
+              ) : (
+                <span className="text-4xl font-black pixel-title">-</span>
               )}
             </div>
-
-            <div className="pixel-card p-3">
-              <p className="text-xs text-[#8175A5]">
-                현재 턴
-              </p>
-
-              <p className="mt-1 text-sm font-bold text-[#211A35]">
-                {currentTurnPlayer
-                  ? `${currentTurnPlayer.role} 턴`
-                  : '-'}
-              </p>
-
-              <p className="mt-1 text-xs text-[#8175A5]">
-                {currentTurnPlayer
-                  ? isMyTurn
-                    ? '내 턴입니다'
-                    : '상대 턴입니다'
-                  : '게임 시작 대기 중'}
-              </p>
-
-              {currentTurnSabotaged && (
-                <p className="mt-1 text-xs font-semibold text-red-500">
-                  이번 턴 사보타주 사용됨
-                </p>
-              )}
-            </div>
-
-            <div className="pixel-card col-span-3 flex items-center justify-between p-3">
-              <p className="text-xs text-[#8175A5]">
-                남은 시간
-              </p>
-
-              <p className="text-sm font-bold text-[#211A35]">
-                {formatRemainingTime(
-                  remainingSeconds,
-                )}
-              </p>
-            </div>
           </div>
+          {status !== 'FINISHED' && (
+            <>
+              <div className="flex flex-col items-center">
+                <p className="text-sm font-black">현재 턴</p>
+                <div className="mt-3 flex h-9 items-center justify-center">
+                  {(() => {
+                    const turnRole = currentTurnPlayer?.role ?? 
+                      (currentTurnMemberId 
+                        ? (String(currentTurnMemberId) === String(effectiveMyMemberId) 
+                            ? effectiveMyRole 
+                            : (effectiveMyRole === 'X' ? 'O' : 'X'))
+                        : null)
+                    if (turnRole === 'O') return <img src={oIcon} alt="O" className="h-full object-contain" />
+                    if (turnRole === 'X') return <img src={xIcon} alt="X" className="h-full object-contain" />
+                    return <span className="text-4xl font-black pixel-title">-</span>
+                  })()}
+                </div>
+              </div>
+              <div className="flex flex-col items-center">
+                <p className="text-sm font-black">남은 시간</p>
+                <p className="mt-3 text-3xl font-black pixel-title tracking-widest text-[#00D0B3]">{formatRemainingTime(remainingSeconds)}</p>
+              </div>
+            </>
+          )}
         </section>
 
-        <div className="mb-3 flex items-center gap-3">
-          <PixelMascot size="sm" />
-          <div className="pixel-card flex-1 p-4 text-xs font-black leading-5">
-            {isMyTurn ? '내 차례예요! 인증할 미션을 골라보세요.' : '상대 차례예요. 사보타주 기회를 노려보세요.'}
+        <div className="flex items-end gap-3 px-2 mb-8 mt-2">
+          <div className="w-[100px] flex-shrink-0">
+            {isMyTurn && currentTurnSabotaged && status !== 'FINISHED' ? (
+              <img src={sabotagedMascot} alt="사보타주 당한 캐릭터" className="w-full object-contain" />
+            ) : (
+              <PixelMascot size="custom" className="w-full" />
+            )}
+          </div>
+          <div className="relative flex-1 rounded-[24px] bg-[#96E4D6] p-4 text-xs font-black leading-5 min-h-[100px] shadow-sm flex flex-col justify-center text-center">
+            {status === 'FINISHED' ? (
+              resultData?.result === 'win' 
+                ? '게임이 종료되었어요. 승리를 축하해요!'
+                : resultData?.result === 'lose'
+                  ? '게임이 종료되었어요. 다음엔 꼭 이겨보세요!'
+                  : '무승부로 게임이 종료되었어요!'
+            ) : isMyTurn ? (
+              currentTurnSabotaged 
+                ? '사보타주 당하여 제한시간이 6시간 감소했어요! 어서 미션을 완료해보세요!'
+                : '내 차례예요! 인증할 미션을 골라보세요.'
+            ) : '상대 차례예요. 사보타주 기회를 노려보세요.'}
           </div>
         </div>
 
-        <GameBoard
-          entryCode={entryCode}
-          missions={missions}
-          players={players}
-          disabled={
-            status !== 'PLAYING' ||
-            !effectiveMyMemberId
-          }
-        />
+        <div className="mt-auto">
+          <GameBoard
+            entryCode={entryCode}
+            missions={missions}
+            players={players}
+            disabled={status !== 'PLAYING' || !effectiveMyMemberId}
+          />
+        </div>
       </main>
     </MobileShell>
   )
 }
 
 export default GamePage
+

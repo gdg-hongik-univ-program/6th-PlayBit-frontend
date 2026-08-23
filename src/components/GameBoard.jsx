@@ -13,11 +13,12 @@ function GameBoard({ entryCode, missions, players, disabled = false }) {
   )
 
   return (
-    <section className="rounded-[24px] border-4 border-white/80 bg-[#DDE7C3] p-3 shadow-[0_7px_0_rgba(58,72,111,0.22)]">
-      <div className="grid grid-cols-3 gap-2">
-        {sortedMissions.map((mission) => (
+    <section className="px-4 py-8">
+      <div className="grid grid-cols-3 mx-auto w-[300px] h-[300px]">
+        {sortedMissions.map((mission, index) => (
           <BoardCell
             key={mission.position}
+            index={index}
             entryCode={entryCode}
             mission={mission}
             players={players}
@@ -27,13 +28,29 @@ function GameBoard({ entryCode, missions, players, disabled = false }) {
 
         {Array.from(
           { length: emptyCellCount },
-          (_, index) => (
-            <div
-              key={`empty-${index}`}
-              className="aspect-square rounded-xl border-2 border-white/80 bg-[#F7F8FF]/85 shadow-[0_3px_0_rgba(57,68,113,0.2)]"
-              aria-label="미션 준비 중"
-            />
-          ),
+          (_, i) => {
+            const index = sortedMissions.length + i;
+            const borderClasses = [
+              'border-r-[4px] border-b-[4px]', // 0
+              'border-r-[4px] border-b-[4px]', // 1
+              'border-b-[4px]',                // 2
+              'border-r-[4px] border-b-[4px]', // 3
+              'border-r-[4px] border-b-[4px]', // 4
+              'border-b-[4px]',                // 5
+              'border-r-[4px]',                // 6
+              'border-r-[4px]',                // 7
+              '',                              // 8
+            ]
+            const borderClass = `border-black ${borderClasses[index] || ''}`
+            
+            return (
+              <div
+                key={`empty-${i}`}
+                className={`flex items-center justify-center ${borderClass}`}
+                aria-label="미션 준비 중"
+              />
+            )
+          }
         )}
       </div>
     </section>

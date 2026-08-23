@@ -1,3 +1,5 @@
+import closeIcon from '../assets/close-icon.png'
+
 const resolveImageUrl = (imageUrl) => {
   if (!imageUrl || /^(https?:|blob:|data:)/i.test(imageUrl)) {
     return imageUrl
@@ -10,32 +12,52 @@ const resolveImageUrl = (imageUrl) => {
   return `${baseUrl.replace(/\/$/, '')}/${imageUrl.replace(/^\//, '')}`
 }
 
-function EvidenceSection({ title, imageUrl, comment }) {
+function EvidenceSection({ title, imageUrl, comment, timestamp }) {
   const resolvedImageUrl = resolveImageUrl(imageUrl)
+  
+  const formatTime = (isoString) => {
+    if (!isoString) return ''
+    try {
+      const date = new Date(isoString)
+      return date.toLocaleString('ko-KR', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      })
+    } catch (e) {
+      return ''
+    }
+  }
 
   return (
     <section className="mt-5">
-      <h3 className="text-xs font-black">{title}</h3>
+      <div className="flex justify-between items-end mb-2">
+        <h3 className="text-xs font-normal">{title}</h3>
+        {timestamp && <span className="text-[10px] text-[#7B8299]">{formatTime(timestamp)}</span>}
+      </div>
       {resolvedImageUrl ? (
-        <img
-          src={resolvedImageUrl}
-          alt={`${title} 사진`}
-          className="mt-2 max-h-80 w-full rounded-xl bg-[#F1F2F6] object-contain"
-        />
+        <div className="flex justify-center rounded-xl bg-[#E5FAF7] border border-[#96E4D6] p-2">
+          <img
+            src={resolvedImageUrl}
+            alt={`${title} 사진`}
+            className="max-h-80 w-full object-contain"
+          />
+        </div>
       ) : (
-        <div className="mt-2 flex min-h-36 items-center justify-center rounded-xl bg-[#F1F2F6] px-4 text-center text-xs font-bold text-[#7B8299]">
+        <div className="flex min-h-36 items-center justify-center rounded-xl border border-[#96E4D6] bg-[#E5FAF7] px-4 text-center text-xs font-normal text-[#00D0B3]">
           서버 응답에 사진 주소가 없습니다.
         </div>
       )}
-      <p className="mt-4 text-xs font-black">인증 코멘트</p>
-      <div className="mt-2 min-h-11 rounded-xl border border-[#E1E4F0] px-3 py-3 text-xs">
+      <p className="mt-4 text-xs font-normal">인증 코멘트</p>
+      <div className="mt-2 min-h-11 rounded-xl border-2 border-[#E1E4F0] bg-[#F8F9FB] px-3 py-3 text-xs text-gray-700">
         {comment || '작성된 코멘트가 없습니다.'}
       </div>
     </section>
   )
 }
 
-function MissionEvidence({ mission, isOpen, onClose }) {
+function MissionEvidence({ mission, mode, isOpen, onClose }) {
   if (!isOpen) return null
 
   return (
@@ -49,34 +71,38 @@ function MissionEvidence({ mission, isOpen, onClose }) {
         <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-[#CBD0DB]" />
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black text-[#6978BF]">
-              미션 인증 기록 확인
+            <p className={`pixel-title text-3xl font-normal ${mode === 'sabotage' ? 'text-[#D65353]' : 'text-[#00D0B3]'}`}>
+              {mode === 'sabotage' ? '사보타주 인증' : '미션 인증'}
             </p>
-            <h2 className="pixel-title mt-1 text-lg font-black">
+            <h2 className="mt-2 text-lg font-normal text-gray-700">
               {mission.content}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-2xl font-black"
+            className="flex h-8 w-8 items-center justify-center transition-transform hover:scale-105 active:scale-95"
             aria-label="닫기"
           >
-            ×
+            <img src={closeIcon} alt="닫기" className="h-full w-full object-contain" />
           </button>
         </div>
 
-        <EvidenceSection
-          title="인증 사진"
-          imageUrl={mission.imageUrl}
-          comment={mission.comment}
-        />
+        {mode === 'complete' && (
+          <EvidenceSection
+            title="인증 사진"
+            imageUrl={mission.imageUrl}
+            comment={mission.comment}
+            timestamp={mission.completedAt}
+          />
+        )}
 
-        {(mission.sabotageImageUrl || mission.sabotageComment) && (
+        {mode === 'sabotage' && (mission.sabotageImageUrl || mission.sabotageComment) && (
           <EvidenceSection
             title="사보타주 인증"
             imageUrl={mission.sabotageImageUrl}
             comment={mission.sabotageComment}
+            timestamp={mission.sabotagedAt || mission.sabotageCreatedAt}
           />
         )}
       </section>

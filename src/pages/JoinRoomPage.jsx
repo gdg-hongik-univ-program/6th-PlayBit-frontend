@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileShell from '../components/MobileShell'
-import PageHeader from '../components/PageHeader'
+
 import useGameStore from '../features/game/model/gameStore'
+import Button from '../components/Button'
+import PageHeader from '../components/PageHeader'
 
 function JoinRoomPage() {
   const navigate = useNavigate()
@@ -29,23 +31,48 @@ function JoinRoomPage() {
     try {
       await enterRoom(entryCode)
       await fetchRoom(entryCode)
-      navigate(`/rooms/${entryCode}/game`)
+      navigate('/rooms', { replace: true })
     } catch (error) {
       console.error('플레이어 등록 실패:', error)
     }
   }
 
   return (
-    <MobileShell>
-      <PageHeader title="방으로 입장" onBack={() => navigate('/rooms')} />
-      <form onSubmit={handleJoinRoom} className="flex min-h-[calc(100dvh-4rem)] flex-col px-5 pb-8 pt-20">
-        <h1 className="pixel-title text-2xl font-black">방 코드를 입력하세요</h1>
-        <p className="mt-3 break-keep text-xs leading-5 text-[#5D6686]">친구에게 받은 6자리 코드를 입력하면 게임방에 참여할 수 있어요.</p>
-        <label htmlFor="entryCode" className="mt-9 text-xs font-black">입장 코드</label>
-        <input id="entryCode" value={entryCode} onChange={handleCodeChange} className="pixel-input mt-3 text-center text-xl font-black uppercase tracking-[0.35em]" placeholder="ABC123" autoFocus />
-        {(validationError || storeError) && <p className="mt-3 rounded-xl bg-[#535F8B] px-4 py-3 text-xs font-bold text-white">⚠ {validationError || storeError}</p>}
-        <button type="submit" disabled={entryCode.length !== 6 || isRoomLoading} className="pixel-button mt-4 w-full">{isRoomLoading ? '입장 중...' : '입장하기'}</button>
-        <div className="mt-auto text-center text-7xl opacity-30">→</div>
+    <MobileShell bgColor="bg-white">
+      <PageHeader title="방 입장하기" onBack={() => navigate('/rooms')} />
+      <form onSubmit={handleJoinRoom} className="flex flex-col items-center px-6 pt-4 pb-12 sm:min-h-0" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+        <label htmlFor="entryCode" className="mt-6 self-start pixel-title text-[22px] font-black tracking-tight text-[#171717]">
+          방 코드를 입력하세요
+        </label>
+        <p className="mt-4 self-start text-sm font-black leading-relaxed text-gray-500">
+          상대방에게 공유받은 6자리 코드를 입력하면<br />
+          게임에 참여할 수 있어요
+        </p>
+        
+        <input 
+          id="entryCode" 
+          value={entryCode} 
+          onChange={handleCodeChange} 
+          className="pixel-input mt-8 w-full text-center text-xl font-black uppercase tracking-[0.35em]" 
+          placeholder="ABC123" 
+          autoFocus 
+        />
+        
+        <Button 
+          type="submit" 
+          disabled={entryCode.length !== 6 || isRoomLoading} 
+          className="mt-6"
+        >
+          {isRoomLoading ? '참여 중...' : '참여하기'}
+        </Button>
+        
+        {(validationError || storeError) && (
+          <div className="mt-4 flex w-full justify-center">
+             <p className="rounded-xl bg-[#9C3434] px-4 py-3 text-xs font-bold text-white shadow-md">
+               ⚠ {validationError || storeError}
+             </p>
+          </div>
+        )}
       </form>
     </MobileShell>
   )

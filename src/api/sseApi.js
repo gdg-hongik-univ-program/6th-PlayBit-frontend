@@ -12,12 +12,6 @@ export const connectRoomSSE = ({
   onRoomUpdate,
   onError,
 }) => {
-  if (!API_BASE_URL) {
-    throw new Error(
-      'VITE_API_BASE_URL이 설정되지 않았습니다.',
-    )
-  }
-
   if (!entryCode) {
     throw new Error(
       'SSE 연결에 필요한 entryCode가 없습니다.',
@@ -25,9 +19,11 @@ export const connectRoomSSE = ({
   }
 
   const baseUrl =
-    API_BASE_URL.endsWith('/')
-      ? API_BASE_URL.slice(0, -1)
-      : API_BASE_URL
+    API_BASE_URL
+      ? API_BASE_URL.endsWith('/')
+        ? API_BASE_URL.slice(0, -1)
+        : API_BASE_URL
+      : ''
 
   const url =
     `${baseUrl}/api/rooms/` +
